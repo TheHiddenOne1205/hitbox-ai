@@ -1,19 +1,48 @@
 @import "tailwindcss";
 
-:root {
+@theme {
+  /* Font Families - Leaning into rounded, readable text alongside retro monospace metrics */
+  --font-sans: "Quicksand", "Fredoka", "Inter", sans-serif;
+  --font-mono: "VT323", "Courier New", monospace;
 
-}
+  /* Cozy Gaming Palette (Obsidian-Gold Base Archetype) */
+  --color-background: #0D0E11;           /* Deep dark retro backdrop */
+  --color-panel: #14161D;                /* Inner component grid dashboard panels */
+  --color-panel-secondary: #1C1F27;      /* Secondary tooltips, filter states, code bars */
+  --color-panel-active: #2C2E1B;         /* Selected navigation sidebar states */
 
-@theme inline {
+  /* Borders & Rules */
+  --color-card-border: #3A362D;          /* Chunky brown wood/stone framing lines */
+  --color-border-light: #524D41;         /* Divider accents for grids and tables */
+  --color-border-gold: #D7A15C;          /* Highlight framework indicator border styling */
 
-}
+  /* Text Typography Scales */
+  --color-text-light: #F0E6D2;           /* Soft cream for header/primary labels */
+  --color-text-muted: #9D9686;           /* Weathered parchment gray for metadata */
+  --color-text-green: #A4C495;           /* Distinct retro-game title typography color */
+  --color-text-dark: #2B2114;            /* Used inside high-contrast light buttons */
 
-@media (prefers-color-scheme: dark) {
-  :root {
+  /* Theme Accents & Game Primitives */
+  --color-accent-gold: #E5C390;          /* Main primary gold selector color */
+  --color-accent-orange: #E47644;        /* Monospace accent tokens and actions */
+  --color-retro-beige: #F5E6CC;          /* Light cream button canvas color */
 
-  }
+  /* Concept Viability / Scoring Metrics (Cozy Low-Contrast Scales) */
+  --color-pixel-green: #6AA84F;          /* Strong loop tracking green indicator */
+  --color-pixel-yellow: #F1C232;         /* Stable caution warning validation score */
+  --color-pixel-orange: #E69138;         /* Room to improve indicator color token */
+  --color-pixel-red: #CC0000;            /* Downward trend or severe structural pitfall */
+
+  /* Border Radii (Soft Hand-Crafted Gaming Radii) */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 18px;                      /* Large soft nested layout containers */
+  --radius-full: 9999px;
 }
 
 body {
-
+  background-color: var(--color-background);
+  color: var(--color-text-light);
+  font-family: var(--font-sans);
 }

@@ -7,8 +7,8 @@ Update this file after every completed feature. Any AI agent reading this should
 ## Current Status
 
 * **Phase:** Phase 1 — Foundation
-* **Last completed:** None
-* **Next:** 01 Homepage
+* **Last completed:** 01 Homepage
+* **Next:** 02 Auth
 
 ---
 
@@ -16,11 +16,11 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ### Phase 1 — Foundation
 
-* [ ] **01 Homepage**
+* [x] **01 Homepage**
 
-* [ ] Full page UI (Navbar with context selector placeholder, Hero section with CTAs, Dashboard preview, Features grid, How It Works panel, Footer)
+* [x] Full page UI (Navbar with context selector placeholder, Hero section with CTAs, Dashboard preview, Features grid, How It Works panel, Footer)
 
-* [ ] Dynamic routing logic (`/login` or `/dashboard`) based on active authentication state
+* [x] Dynamic routing logic (`/login` or `/dashboard`) based on active authentication state
 
 * [ ] **02 Auth**
 
