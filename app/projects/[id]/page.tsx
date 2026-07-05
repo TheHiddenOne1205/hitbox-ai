@@ -1,10 +1,11 @@
 import { createInsforgeServer } from "@/lib/insforge-server";
 import { Navbar, NavbarUser } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { ProjectEditorClient } from "./project-editor-client";
+import { Project } from "@/types";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -22,6 +23,31 @@ export default async function ProjectPage({ params }: Props) {
 
   if (!user.profile?.username) {
     redirect("/onboarding");
+  }
+
+  let initialProject: Project | null = null;
+  const isNew = id === "1" || id === "new";
+
+  if (!isNew) {
+    // Validate UUID format roughly before querying
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      notFound();
+    }
+
+    const { data: project, error } = await insforge.database
+      .from("projects")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single();
+
+    if (error || !project) {
+      console.error(`[projects/[id]] Fetch error for ID ${id}:`, error);
+      notFound();
+    }
+    
+    initialProject = project as unknown as Project;
   }
 
   return (
@@ -43,20 +69,23 @@ export default async function ProjectPage({ params }: Props) {
             <span className="font-mono text-xs text-accent-gold uppercase tracking-widest">
               GDD Editor
             </span>
-            <h1 className="text-2xl font-bold text-text-light font-sans">
-              Project Configuration
+            <h1 className="text-2xl font-bold text-text-light font-sans font-semibold">
+              {isNew ? "Create Project" : "Project Configuration"}
             </h1>
             <p className="text-sm text-text-muted">
-              Define your game design profile, import blueprint documents, and generate pitch assets.
+              {isNew 
+                ? "Define your game design profile or import blueprint documents." 
+                : "Modify your active game design profile and generate Pitch / GDD documents."}
             </p>
           </div>
         </div>
 
         {/* All interactive content lives in the client component */}
-        <ProjectEditorClient projectId={id} />
+        <ProjectEditorClient projectId={id} initialProject={initialProject} />
       </main>
 
       <Footer />
     </div>
   );
 }
+

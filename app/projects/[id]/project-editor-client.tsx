@@ -1,42 +1,106 @@
 "use client";
 
 import { useState } from "react";
-import { Save, Loader2, ChevronLeft, FlaskConical } from "lucide-react";
+import { Save, Loader2, FlaskConical } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ProfileStatusIndicator } from "@/components/projects/ProfileStatusIndicator";
 import { DraftUpload } from "@/components/projects/DraftUpload";
 import { ProjectForm, type ProjectFormData } from "@/components/projects/ProjectForm";
 import { GDDPreview } from "@/components/projects/GDDPreview";
-
-// ─── Mock data — will be replaced by real DB fetch in Phase 06 ──────────────
-const MOCK_PROJECT = {
-  id: "1",
-  title: "Neon Vanguard",
-  is_complete: false,
-  pitch_deck_url: null as string | null,
-};
+import { saveProjectAction } from "@/actions/projects";
+import { Project } from "@/types";
 
 type Props = {
   projectId: string;
+  initialProject: Project | null;
 };
 
-// ─── Client Section (form state management) ───────────────────────────────────
+export function ProjectEditorClient({ projectId, initialProject }: Props) {
+  const router = useRouter();
+  
+  // Map DB record properties to ProjectForm state structure
+  const getInitialForm = (): ProjectFormData => {
+    if (!initialProject) {
+      return {
+        title: "",
+        genre: "",
+        artStyle: "",
+        platform: [],
+        targetAudience: "",
+        keywords: [],
+        playerLoop: "",
+        coreMechanics: [],
+        monetization: "",
+      };
+    }
 
-export function ProjectEditorClient({ projectId }: Props) {
-  const [formData, setFormData] = useState<ProjectFormData | null>(null);
+    return {
+      title: initialProject.title || "",
+      genre: initialProject.genre || "",
+      artStyle: initialProject.art_style || "",
+      platform: initialProject.platform
+        ? initialProject.platform.split(",").map((p) => p.trim()).filter(Boolean)
+        : [],
+      targetAudience: initialProject.target_audience || "",
+      keywords: initialProject.keywords || [],
+      playerLoop: initialProject.gdd_data?.playerLoop || "",
+      coreMechanics: initialProject.gdd_data?.coreMechanics || [],
+      monetization: initialProject.gdd_data?.monetizationStrategy || "",
+    };
+  };
+
+  const [formData, setFormData] = useState<ProjectFormData>(getInitialForm());
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Simulate save (will wire to actions/projects.ts in Phase 06)
   const handleSave = async () => {
     setIsSaving(true);
     setSaveSuccess(false);
-    await new Promise((r) => setTimeout(r, 1200));
-    setIsSaving(false);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+    setErrorMessage(null);
+
+    try {
+      const data = new FormData();
+      data.append("title", formData.title);
+      data.append("genre", formData.genre);
+      data.append("artStyle", formData.artStyle);
+      data.append("targetAudience", formData.targetAudience);
+      data.append("platform", formData.platform.join(","));
+      data.append("keywords", JSON.stringify(formData.keywords));
+      data.append("playerLoop", formData.playerLoop);
+      data.append("monetization", formData.monetization);
+      data.append("coreMechanics", JSON.stringify(formData.coreMechanics));
+
+      if (selectedFile) {
+        data.append("file", selectedFile);
+      }
+
+      const response = await saveProjectAction(projectId, data);
+
+      if (response.success && response.id) {
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+        
+        // If this is a newly created project, redirect to its actual UUID path
+        const isNew = projectId === "1" || projectId === "new";
+        if (isNew) {
+          router.push(`/projects/${response.id}`);
+        } else {
+          router.refresh();
+        }
+      } else {
+        setErrorMessage(response.error || "Failed to save project settings");
+      }
+    } catch (err) {
+      console.error("[ProjectEditor] Save error:", err);
+      setErrorMessage("An unexpected error occurred while saving the configuration.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Simulate extract (will wire to /api/gdd/extract in Phase 07)
@@ -53,15 +117,19 @@ export function ProjectEditorClient({ projectId }: Props) {
     setIsGenerating(false);
   };
 
+  const isComplete = initialProject?.is_complete ?? false;
+  const currentTitle = formData.title || initialProject?.title || "Unnamed Project";
+
   return (
     <div className="flex flex-col gap-6">
       {/* Warning Banner */}
-      <ProfileStatusIndicator isComplete={MOCK_PROJECT.is_complete} />
+      <ProfileStatusIndicator isComplete={isComplete} />
 
       {/* Draft Upload */}
       <DraftUpload
         onExtract={handleExtract}
         onSkip={() => {}}
+        onFileSelect={setSelectedFile}
         isExtracting={isExtracting}
       />
 
@@ -70,9 +138,7 @@ export function ProjectEditorClient({ projectId }: Props) {
         {/* Main GDD Form */}
         <div className="flex-1 min-w-0 flex flex-col gap-6">
           <ProjectForm
-            initialData={{
-              title: MOCK_PROJECT.title,
-            }}
+            initialData={getInitialForm()}
             onChange={setFormData}
           />
         </div>
@@ -80,8 +146,8 @@ export function ProjectEditorClient({ projectId }: Props) {
         {/* Sidebar: GDD Preview Card */}
         <div className="w-full xl:w-[340px] shrink-0 flex flex-col gap-4 sticky top-[88px]">
           <GDDPreview
-            projectTitle={formData?.title || MOCK_PROJECT.title}
-            hasPitchDeckUrl={!!MOCK_PROJECT.pitch_deck_url}
+            projectTitle={currentTitle}
+            hasPitchDeckUrl={!!initialProject?.pitch_deck_url}
             onGenerate={handleGenerate}
             isGenerating={isGenerating}
           />
@@ -101,6 +167,13 @@ export function ProjectEditorClient({ projectId }: Props) {
           </div>
         </div>
       </div>
+
+      {/* Error display if present */}
+      {errorMessage && (
+        <div className="bg-pixel-red/10 border border-pixel-red/30 rounded-xl p-4 text-sm text-pixel-red font-mono">
+          [ERROR] {errorMessage}
+        </div>
+      )}
 
       {/* Save Button — sticky footer feel */}
       <div className="flex items-center justify-between py-4 px-6 bg-panel border border-card-border rounded-xl shadow-[0px_4px_10px_rgba(0,0,0,0.4)] mt-2">
@@ -135,3 +208,4 @@ export function ProjectEditorClient({ projectId }: Props) {
     </div>
   );
 }
+

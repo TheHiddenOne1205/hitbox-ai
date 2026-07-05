@@ -1,42 +1,39 @@
-# Memory — Database Schema Provisioning
+# Memory — Project Save Logic & Navigation Integration
 
-Last updated: 2026-07-05T12:40:00+05:30
+Last updated: 2026-07-05T14:10:00+05:30
 
 ## What was built
 
-- **`types/index.ts`** ([types/index.ts](file:///home/kalash/projects/hitbox-ai/types/index.ts)): Created from scratch. Full TypeScript interfaces for all four tables — `Project`, `AgentRun`, `Mechanic`, `AgentLog` — plus Insert/Update variants, `CompetitorResearchDossier`, `SearXNGResult`, and `DBResponse<T>` utility types.
-- **InsForge DB Tables**: All four tables provisioned live on `r3krqy29.ap-southeast.insforge.app`:
-  - `projects` — game design profiles, `gdd_data jsonb DEFAULT '{}'`, `is_complete boolean DEFAULT false`, CASCADE from `auth.users`
-  - `agent_runs` — concept validation sessions, FK to `projects` ON DELETE CASCADE, status CHECK constraint (`running/completed/failed`)
-  - `mechanics` — individual community insights, FK to `agent_runs` ON DELETE SET NULL (supports manual entries), viability_score CHECK 0–100, source CHECK (`search/manual`)
-  - `agent_logs` — system audit entries, FK to `agent_runs` and `projects` ON DELETE CASCADE, optional `mechanic_id` FK ON DELETE SET NULL
-- **RLS Policies**: Row Level Security enabled on all four tables with SELECT/INSERT/UPDATE/DELETE policies scoped to `auth.uid() = user_id`.
-- **`drafts` Storage Bucket**: Private (non-public) bucket created. Path convention: `drafts/{user_id}/{project_id}/gdd.pdf`.
-- **`scripts/setup-db.mjs`** ([scripts/setup-db.mjs](file:///home/kalash/projects/hitbox-ai/scripts/setup-db.mjs)): Reusable provisioning script that drives the InsForge MCP CLI via proper JSON-RPC 2.0 stdio protocol (initialize → initialized notification → tools/call). Idempotent — safe to re-run.
+- **`actions/projects.ts`** — Created `saveProjectAction(projectId, formData)` Server Action to handle project creations (SQL `INSERT`) and updates (SQL `UPDATE`), dynamic calculation of `is_complete` status, and raw `File` binary uploads to the `drafts` S3 bucket in InsForge.
+- **`app/projects/[id]/page.tsx`** — Refactored to dynamically retrieve project properties using `insforge.database.from("projects")` and pass them to the client editor.
+- **`app/projects/[id]/project-editor-client.tsx`** — Wired the form save button to the Server Action. Added redirect handling for newly initialized project records (`/projects/[new_uuid]`).
+- **`components/projects/DraftUpload.tsx`** — Added `onFileSelect` prop to expose the selected file to the client editor state for saving.
+- **`components/layout/Navbar.tsx`** — Rewired the RPG dropdown selector to dynamically query user projects from `insforge.database.from("projects")`. Added automatic path-redirect handling when swapping selected project contexts.
+- **`app/projects/page.tsx`** — Fully rewired page to query the user's projects database. If empty, renders the standard empty state. If projects exist, renders a clean grid of project cards with completion status tags, slot IDs, created dates, and editor link routes.
+- **`app/dashboard/page.tsx`** — Dynamically checks project presence. Displays the RPG setup prompt card if no projects exist, or replaces it with a summary card showing the active slots count and a quick manage projects trigger.
 
 ## Decisions made
 
-- **ON DELETE CASCADE** on all child tables (`agent_runs`, `mechanics`, `agent_logs`) when their parent project is deleted.
-- **`run_id` ON DELETE SET NULL** on `mechanics` — supports manually added mechanics that have no associated agent run.
-- **`gdd_data` defaults to `'{}'::jsonb`** (not null) — simplifies `is_complete` checks downstream.
-- **MCP CLI via stdio**: InsForge MCP is a stdio JSON-RPC server, not a REST API. The setup script spawns `npx @insforge/mcp@latest` and handles the full MCP handshake per call.
+- **Syntax standard**: Database queries must use `insforge.database.from()` (not `insforge.from()`) as defined in the SDK reference.
+- **2-argument upload**: S3 file upload matches the SDK signature `upload(path, file)` passing the `File` object directly without contentType options or Buffer streams.
+- **Form completeness criteria**: `is_complete = true` is evaluated automatically if `title`, `genre`, and `playerLoop` are all filled.
+- **Dropdown URL parsing**: The Navbar dropdown parses pathname parameter indexes via regex to determine active context and preserve child paths on route transitions (e.g. `/projects/[old]/validate` -> `/projects/[new]/validate`).
 
 ## Problems solved
 
-- **MCP subagent permission issue**: InsForge MCP permission grants are scoped to the parent agent context only — subagents cannot inherit them. All MCP-dependent work must run from the parent agent directly, or via a terminal script that invokes the MCP CLI process.
-- **MCP stdio protocol**: The InsForge MCP CLI requires the full JSON-RPC 2.0 handshake: `initialize` request → `notifications/initialized` notification → `tools/call`. Skipping the notification caused silent failures.
+- **Database syntax errors**: Fixed compiler errors regarding missing `.from()` property on `InsForgeClient` by referencing the correct `.database` namespace wrapper.
+- **Storage parameter count mismatch**: Corrected `.upload()` argument counts from 3 parameters (as documented in `library-docs.md`) to the SDK-enforced 2-parameter signature.
+- **Static empty dashboards**: Solved UX blocker where dashboards and grids remained empty even after projects were saved by replacing all mockup components with dynamic database query loops.
 
 ## Current state
 
-- **Phase 1 — 04 Database Schema** is complete and fully verified.
-- All four tables exist in InsForge with correct schema, FK constraints, and RLS policies.
-- `drafts` bucket is live and private.
-- TypeScript types in `types/index.ts` match the schema exactly.
-- The project builds successfully (no new code changes that could break the build).
+- **Phase 2 — 06 Project Save Logic** is fully complete and verified. Next is **Phase 2 — 07 AI Project Extraction**.
+- Grid list renders saved projects, and user setup prompts hide dynamically.
+- Production build passes cleanly with no compiler warnings or TypeScript type errors.
 
 ## Next session starts with
 
-- **Phase 2 — 05 Project Form Page — Full UI**: Build the complete project setup page at `app/projects/[id]/page.tsx` with mock data — no save logic yet. Includes: incomplete profile warning banner, drag-and-drop upload zone, Base Metadata form fields, Context Keywords chip input, Core GDD textarea fields, Generate PDF button, and Save button.
+- **Phase 2 — 07 AI Project Extraction from Draft Document**: Implement text extraction from the uploaded draft document and Gemini integration inside `/api/gdd/extract` to parse raw text and return structured project variables that will auto-fill form fields.
 
 ## Open questions
 

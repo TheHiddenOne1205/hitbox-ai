@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { Shield, Database, BarChart2, Activity } from "lucide-react";
 import { InitializeProjectButton } from "./initialize-project-button";
 import { IdentifyUser } from "./identify-user";
+import Link from "next/link";
 
 export default async function DashboardPage() {
   const insforge = await createInsforgeServer();
@@ -18,6 +19,14 @@ export default async function DashboardPage() {
     redirect("/onboarding");
   }
 
+  // Fetch user projects count
+  const { data: projects } = await insforge.database
+    .from("projects")
+    .select("id")
+    .eq("user_id", user.id);
+
+  const hasProjects = projects && projects.length > 0;
+
   return (
     <div className="min-h-screen flex flex-col bg-background font-sans">
       <IdentifyUser
@@ -30,7 +39,7 @@ export default async function DashboardPage() {
         {/* Header */}
         <div className="flex flex-col gap-1">
           <span className="font-mono text-xs text-accent-gold uppercase tracking-widest">Workspace HUD</span>
-          <h1 className="text-2xl font-bold text-text-light font-sans">Dashboard Panel</h1>
+          <h1 className="text-2xl font-bold text-text-light font-sans font-semibold">Dashboard Panel</h1>
           <p className="text-sm text-text-muted">Welcome, {user.email}. Authentication session verified successfully.</p>
         </div>
 
@@ -81,16 +90,33 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Project Setup Prompt Card */}
-        <div className="bg-panel border border-card-border rounded-xl p-6 shadow-[0px_4px_10px_rgba(0,0,0,0.4)] flex flex-col gap-4 hover:border-border-gold transition-all duration-300">
-          <div className="flex flex-col gap-1">
-            <h3 className="font-sans text-lg font-bold text-text-light">Create Your First Game Profile</h3>
-            <p className="text-sm text-text-muted">You have no active game designs in this workspace. Set up your first profile variables or upload a draft blueprint to start concept validation sweeps.</p>
+        {/* Dynamic Project Setup Prompt / Overview Card */}
+        {!hasProjects ? (
+          <div className="bg-panel border border-card-border rounded-xl p-6 shadow-[0px_4px_10px_rgba(0,0,0,0.4)] flex flex-col gap-4 hover:border-border-gold transition-all duration-300">
+            <div className="flex flex-col gap-1">
+              <h3 className="font-sans text-lg font-bold text-text-light">Create Your First Game Profile</h3>
+              <p className="text-sm text-text-muted">You have no active game designs in this workspace. Set up your first profile variables or upload a draft blueprint to start concept validation sweeps.</p>
+            </div>
+            <div>
+              <InitializeProjectButton />
+            </div>
           </div>
-          <div>
-            <InitializeProjectButton />
+        ) : (
+          <div className="bg-panel border border-card-border rounded-xl p-6 shadow-[0px_4px_10px_rgba(0,0,0,0.4)] flex items-center justify-between gap-6 hover:border-border-gold transition-all duration-300">
+            <div className="flex flex-col gap-1">
+              <h3 className="font-sans text-base font-bold text-text-light">Workspace Initialized</h3>
+              <p className="text-sm text-text-muted">
+                You have {projects.length} active game design profile{projects.length > 1 ? "s" : ""} registered. Select a context to validate gameplay mechanics.
+              </p>
+            </div>
+            <Link
+              href="/projects"
+              className="px-5 py-2.5 bg-panel-secondary border border-card-border text-accent-gold font-sans font-bold rounded-xl hover:border-border-gold hover:text-text-light transition-all"
+            >
+              Manage Projects
+            </Link>
           </div>
-        </div>
+        )}
       </main>
       <Footer />
     </div>

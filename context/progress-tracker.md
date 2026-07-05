@@ -7,8 +7,8 @@ Update this file after every completed feature. Any AI agent reading this should
 ## Current Status
 
 * **Phase:** Phase 2 — Project Profile & GDD Management
-* **Last completed:** 05 Project Form Page — Full UI
-* **Next:** 06 Project Save Logic
+* **Last completed:** 06 Project Save Logic
+* **Next:** 07 AI Project Extraction from Draft Document
 
 ---
 
@@ -60,13 +60,15 @@ Update this file after every completed feature. Any AI agent reading this should
 
   * [x] Responsive two-column layout (form + sticky sidebar) at `app/projects/[id]/page.tsx`
 
-* [ ] **06 Project Save Logic**
+* [x] **06 Project Save Logic**
 
-* [ ] Server Action mutations inside `actions/projects.ts` mapped to profile tables
+  * [x] Server Action mutations inside `actions/projects.ts` mapped to profile tables with SQL `INSERT`/`UPDATE` upsert behavior
 
-* [ ] Async PDF binary upload routines saving tracking endpoints into targeted database rows
+  * [x] Async PDF binary upload routines saving tracking endpoints into targeted database rows under `pitch_deck_url` pointer
 
-* [ ] `revalidatePath` hooks keeping the global active dropdown selector synced dynamically
+  * [x] `revalidatePath` hooks keeping the global active dropdown selector and dashboards synced dynamically
+
+  * [x] Dynamic project context selection in the Navbar (reads real DB projects, routes users automatically on selection)
 
 * [ ] **07 AI Project Extraction from Draft Document**
 

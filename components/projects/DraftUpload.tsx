@@ -6,10 +6,11 @@ import { Upload, FileText, Loader2, Zap, SkipForward, X } from "lucide-react";
 type Props = {
   onExtract?: (file: File) => void;
   onSkip?: () => void;
+  onFileSelect?: (file: File | null) => void;
   isExtracting?: boolean;
 };
 
-export function DraftUpload({ onExtract, onSkip, isExtracting = false }: Props) {
+export function DraftUpload({ onExtract, onSkip, onFileSelect, isExtracting = false }: Props) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -21,9 +22,10 @@ export function DraftUpload({ onExtract, onSkip, isExtracting = false }: Props) 
       const file = e.dataTransfer.files[0];
       if (file && (file.type === "application/pdf" || file.type === "text/plain" || file.type === "text/markdown")) {
         setSelectedFile(file);
+        onFileSelect?.(file);
       }
     },
-    []
+    [onFileSelect]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
@@ -37,7 +39,10 @@ export function DraftUpload({ onExtract, onSkip, isExtracting = false }: Props) 
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setSelectedFile(file);
+    if (file) {
+      setSelectedFile(file);
+      onFileSelect?.(file);
+    }
   };
 
   const handleExtract = () => {
@@ -48,8 +53,10 @@ export function DraftUpload({ onExtract, onSkip, isExtracting = false }: Props) 
 
   const clearFile = () => {
     setSelectedFile(null);
+    onFileSelect?.(null);
     if (inputRef.current) inputRef.current.value = "";
   };
+
 
   return (
     <div className="bg-panel border border-card-border rounded-xl p-6 shadow-[0px_4px_10px_rgba(0,0,0,0.4)] flex flex-col gap-5">

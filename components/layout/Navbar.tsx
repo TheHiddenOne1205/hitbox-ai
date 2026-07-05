@@ -14,12 +14,6 @@ type Project = {
   genre: string;
 };
 
-const MOCK_PROJECTS: Project[] = [
-  { id: "1", title: "Neon Vanguard", genre: "Roguelike Deckbuilder" },
-  { id: "2", title: "Project: Aether", genre: "Metroidvania RPG" },
-  { id: "3", title: "Crypt Crawler", genre: "Tactical Dungeon Crawler" },
-];
-
 export type NavbarUser = {
   id?: string;
   email?: string | null;
@@ -35,7 +29,8 @@ type NavbarProps = {
 export function Navbar({ initialUser }: NavbarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [selectedProject, setSelectedProject] = useState<Project | null>(MOCK_PROJECTS[0]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(!!initialUser);
   const [userEmail, setUserEmail] = useState<string | null>(initialUser?.profile?.username || initialUser?.email || null);
@@ -49,25 +44,61 @@ export function Navbar({ initialUser }: NavbarProps) {
     setLoading(false);
   }
 
-  // Synchronize state with real InsForge authentication
+  // Synchronize state with real InsForge authentication & load user projects
   useEffect(() => {
-    if (!initialUser) {
-      const checkSession = async () => {
+    const syncSessionAndProjects = async () => {
+      let activeUser = initialUser;
+      
+      if (!initialUser) {
         try {
           const { data } = await insforge.auth.getCurrentUser();
           setIsLoggedIn(!!data?.user);
           const profile = data?.user?.profile as Record<string, unknown> | null;
           const username = typeof profile?.username === "string" ? profile.username : null;
           setUserEmail(username || data?.user?.email || null);
+          if (data?.user) {
+            activeUser = data.user as unknown as NavbarUser;
+          }
         } catch (err) {
           console.error("[Navbar] Error checking authentication state:", err);
         } finally {
           setLoading(false);
         }
-      };
-      checkSession();
-    }
-  }, [initialUser, pathname]);
+      }
+
+      // If user is authenticated, retrieve their projects dynamically from the DB
+      if (activeUser || isLoggedIn) {
+        try {
+          const { data, error } = await insforge.database
+            .from("projects")
+            .select("id, title, genre")
+            .order("created_at", { ascending: false });
+
+          if (error) {
+            console.error("[Navbar] Error fetching projects from DB:", error);
+          } else if (data) {
+            const fetched = data as Project[];
+            setProjects(fetched);
+
+            // Determine active selected project context based on current path
+            const match = pathname.match(/\/projects\/([^\/]+)/);
+            const currentId = match ? match[1] : null;
+
+            if (currentId && currentId !== "new" && currentId !== "1") {
+              const matched = fetched.find((p) => p.id === currentId);
+              if (matched) setSelectedProject(matched);
+            } else if (fetched.length > 0) {
+              setSelectedProject(fetched[0]);
+            }
+          }
+        } catch (err) {
+          console.error("[Navbar] Unexpected error fetching projects:", err);
+        }
+      }
+    };
+
+    syncSessionAndProjects();
+  }, [initialUser, isLoggedIn, pathname]);
 
   const handleAuthAction = async () => {
     if (isLoggedIn) {
@@ -86,6 +117,23 @@ export function Navbar({ initialUser }: NavbarProps) {
       }
     } else {
       router.push("/login");
+    }
+  };
+
+  const handleProjectSelect = (project: Project) => {
+    posthog.capture("project_context_changed", {
+      project_id: project.id,
+      project_title: project.title,
+      genre: project.genre,
+    });
+    setSelectedProject(project);
+    setDropdownOpen(false);
+
+    // Dynamic path-based redirection mapping
+    const match = pathname.match(/\/projects\/([^\/]+)(.*)/);
+    if (match) {
+      const subPath = match[2]; // e.g. "/validate" or empty
+      router.push(`/projects/${project.id}${subPath}`);
     }
   };
 
@@ -128,36 +176,33 @@ export function Navbar({ initialUser }: NavbarProps) {
 
             {dropdownOpen && (
               <div className="absolute left-0 mt-2 w-64 bg-panel border border-card-border rounded-lg shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                <div className="px-3 py-1.5 border-b border-border-light mb-1">
+                <div className="px-3 py-1.5 border-b border-border-light mb-1 flex justify-between items-center">
                   <span className="font-mono text-xs text-text-muted">Select RPG Inventory Slot</span>
                 </div>
-                {MOCK_PROJECTS.map((project) => (
-                  <button
-                    key={project.id}
-                    onClick={() => {
-                      posthog.capture("project_context_changed", {
-                        project_id: project.id,
-                        project_title: project.title,
-                        genre: project.genre,
-                      });
-                      setSelectedProject(project);
-                      setDropdownOpen(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded-md transition-colors flex flex-col ${
-                      selectedProject?.id === project.id
-                        ? "bg-panel-active border border-border-light text-text-light"
-                        : "hover:bg-panel-secondary text-text-muted hover:text-text-light"
-                    }`}
-                  >
-                    <span className="font-sans text-sm font-bold">{project.title}</span>
-                    <span className="font-mono text-[11px] text-accent-gold/80">{project.genre}</span>
-                  </button>
-                ))}
+                {projects.length === 0 ? (
+                  <div className="px-3 py-2.5 text-xs text-text-muted italic">No active projects</div>
+                ) : (
+                  projects.map((project) => (
+                    <button
+                      key={project.id}
+                      onClick={() => handleProjectSelect(project)}
+                      className={`w-full text-left px-3 py-2 rounded-md transition-colors flex flex-col ${
+                        selectedProject?.id === project.id
+                          ? "bg-panel-active border border-border-light text-text-light"
+                          : "hover:bg-panel-secondary text-text-muted hover:text-text-light"
+                      }`}
+                    >
+                      <span className="font-sans text-sm font-bold">{project.title}</span>
+                      <span className="font-mono text-[11px] text-accent-gold/80">{project.genre}</span>
+                    </button>
+                  ))
+                )}
               </div>
             )}
           </div>
         )}
       </div>
+
 
       {/* Center & Right: Links & Auth State Toggle */}
       <div className="flex items-center gap-8">
