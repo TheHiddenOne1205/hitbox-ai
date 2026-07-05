@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Quicksand, VT323 } from "next/font/google";
 import "./globals.css";
+import { PostHogPageview } from "@/lib/posthog-client";
 
 const quicksand = Quicksand({
   subsets: ["latin"],
@@ -29,6 +30,7 @@ export default function RootLayout({
       className={`${quicksand.variable} ${vt323.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-text-light font-sans">
+        <PostHogPageview />
         {children}
       </body>
     </html>

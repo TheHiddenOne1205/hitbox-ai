@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Play, Flame, Search, MessageSquare, AlertTriangle, TrendingUp } from "lucide-react";
+import { ArrowRight, Play, Flame, Search, AlertTriangle, TrendingUp } from "lucide-react";
+import posthog from "posthog-js";
 
 type HeroProps = {
   isLoggedIn: boolean;
@@ -30,13 +31,14 @@ export function Hero({ isLoggedIn }: HeroProps) {
         </h1>
 
         <p className="font-sans text-base sm:text-lg text-text-muted max-w-xl leading-relaxed">
-          Hitbox AI sweeps organic community indexes, extracts real player friction points, and evaluates mechanic concepts against your game's design parameters.
+          Hitbox AI sweeps organic community indexes, extracts real player friction points, and evaluates mechanic concepts against your game&apos;s design parameters.
         </p>
 
         {/* Buttons (Retro Styled) */}
         <div className="flex flex-col sm:flex-row gap-4 mt-4 w-full sm:w-auto">
           <Link
             href={isLoggedIn ? "/projects/1/validate" : "/login"}
+            onClick={() => posthog.capture("hero_cta_clicked", { cta: "validate_concept", is_logged_in: isLoggedIn })}
             className="group relative px-6 py-3.5 bg-accent-orange border-2 border-card-border text-text-light font-sans font-bold rounded-xl shadow-[0_4px_0_px_var(--color-card-border)] hover:translate-y-[2px] hover:shadow-[0_2px_0_px_var(--color-card-border)] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-2"
           >
             <span>Validate Your Concept</span>
@@ -45,6 +47,7 @@ export function Hero({ isLoggedIn }: HeroProps) {
 
           <Link
             href={targetRoute}
+            onClick={() => posthog.capture("hero_cta_clicked", { cta: "start_for_free", is_logged_in: isLoggedIn })}
             className="px-6 py-3.5 bg-retro-beige border border-card-border text-text-dark font-sans font-bold rounded-full hover:bg-retro-beige/90 transition-all flex items-center justify-center gap-2 shadow-[0_2px_6px_rgba(0,0,0,0.2)]"
           >
             <span>Start For Free</span>

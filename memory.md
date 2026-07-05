@@ -1,34 +1,42 @@
-# Memory — Homepage Implementation
+# Memory — Database Schema Provisioning
 
-Last updated: 2026-07-05T10:00:17+05:30
+Last updated: 2026-07-05T12:40:00+05:30
 
 ## What was built
 
-- **Navbar Component** ([Navbar.tsx](file:///home/kalash/projects/hitbox-ai/components/layout/Navbar.tsx)): Contains logo, main navigation routes, RPG-styled project selector context selector dropdown, and a developer guest/dev session toggle.
-- **Footer Component** ([Footer.tsx](file:///home/kalash/projects/hitbox-ai/components/layout/Footer.tsx)): Simple footer containing app description and standard utility links.
-- **Hero & CSS Dashboard Mockup** ([Hero.tsx](file:///home/kalash/projects/hitbox-ai/components/homepage/Hero.tsx)): Contains high-impact copy, main gaming control buttons with shadow offsets, and a visual dashboard console mockup simulating viability score rings and community sentiment statistics.
-- **Features Grid** ([Features.tsx](file:///home/kalash/projects/hitbox-ai/components/homepage/Features.tsx)): Details three value-prop cards (Scraping, AI Matching, GDD Document Extraction).
-- **How It Works Timeline** ([HowItWorks.tsx](file:///home/kalash/projects/hitbox-ai/components/homepage/HowItWorks.tsx)): Progressive game validation lifecycle timeline guide.
-- **Homepage Page Router** ([page.tsx](file:///home/kalash/projects/hitbox-ai/app/page.tsx)): Integrates all landing sections, listening to Navbar custom session events to handle routing shifts.
+- **`types/index.ts`** ([types/index.ts](file:///home/kalash/projects/hitbox-ai/types/index.ts)): Created from scratch. Full TypeScript interfaces for all four tables — `Project`, `AgentRun`, `Mechanic`, `AgentLog` — plus Insert/Update variants, `CompetitorResearchDossier`, `SearXNGResult`, and `DBResponse<T>` utility types.
+- **InsForge DB Tables**: All four tables provisioned live on `r3krqy29.ap-southeast.insforge.app`:
+  - `projects` — game design profiles, `gdd_data jsonb DEFAULT '{}'`, `is_complete boolean DEFAULT false`, CASCADE from `auth.users`
+  - `agent_runs` — concept validation sessions, FK to `projects` ON DELETE CASCADE, status CHECK constraint (`running/completed/failed`)
+  - `mechanics` — individual community insights, FK to `agent_runs` ON DELETE SET NULL (supports manual entries), viability_score CHECK 0–100, source CHECK (`search/manual`)
+  - `agent_logs` — system audit entries, FK to `agent_runs` and `projects` ON DELETE CASCADE, optional `mechanic_id` FK ON DELETE SET NULL
+- **RLS Policies**: Row Level Security enabled on all four tables with SELECT/INSERT/UPDATE/DELETE policies scoped to `auth.uid() = user_id`.
+- **`drafts` Storage Bucket**: Private (non-public) bucket created. Path convention: `drafts/{user_id}/{project_id}/gdd.pdf`.
+- **`scripts/setup-db.mjs`** ([scripts/setup-db.mjs](file:///home/kalash/projects/hitbox-ai/scripts/setup-db.mjs)): Reusable provisioning script that drives the InsForge MCP CLI via proper JSON-RPC 2.0 stdio protocol (initialize → initialized notification → tools/call). Idempotent — safe to re-run.
 
 ## Decisions made
 
-- **Icon library selection**: Installed and used `lucide-react` for UI icons.
-- **Dashboard Preview rendering**: Opted for a styled CSS console panel with custom tables, borders, and VT323 typography to satisfy the high visual aesthetics criteria.
-- **Auth Simulation**: Set up a simulated dev-mode switch on the Navbar that toggles a mock session state in `localStorage` and triggers a window event, allowing you to test redirect CTA parameters instantly.
+- **ON DELETE CASCADE** on all child tables (`agent_runs`, `mechanics`, `agent_logs`) when their parent project is deleted.
+- **`run_id` ON DELETE SET NULL** on `mechanics` — supports manually added mechanics that have no associated agent run.
+- **`gdd_data` defaults to `'{}'::jsonb`** (not null) — simplifies `is_complete` checks downstream.
+- **MCP CLI via stdio**: InsForge MCP is a stdio JSON-RPC server, not a REST API. The setup script spawns `npx @insforge/mcp@latest` and handles the full MCP handshake per call.
 
 ## Problems solved
 
-- Created the directories `/components/layout/` and `/components/homepage/` on the fly during code creation.
+- **MCP subagent permission issue**: InsForge MCP permission grants are scoped to the parent agent context only — subagents cannot inherit them. All MCP-dependent work must run from the parent agent directly, or via a terminal script that invokes the MCP CLI process.
+- **MCP stdio protocol**: The InsForge MCP CLI requires the full JSON-RPC 2.0 handshake: `initialize` request → `notifications/initialized` notification → `tools/call`. Skipping the notification caused silent failures.
 
 ## Current state
 
-- Homepage features are complete and functional under mock configurations.
-- Verified TypeScript compilation successfully with `npx tsc --noEmit`.
+- **Phase 1 — 04 Database Schema** is complete and fully verified.
+- All four tables exist in InsForge with correct schema, FK constraints, and RLS policies.
+- `drafts` bucket is live and private.
+- TypeScript types in `types/index.ts` match the schema exactly.
+- The project builds successfully (no new code changes that could break the build).
 
 ## Next session starts with
 
-- **02 Auth** under **Phase 1 — Foundation** — implementing InsForge authentication with Google and GitHub OAuth, callback handlers at `/app/(auth)/callback`, and middleware access-control filters.
+- **Phase 2 — 05 Project Form Page — Full UI**: Build the complete project setup page at `app/projects/[id]/page.tsx` with mock data — no save logic yet. Includes: incomplete profile warning banner, drag-and-drop upload zone, Base Metadata form fields, Context Keywords chip input, Core GDD textarea fields, Generate PDF button, and Save button.
 
 ## Open questions
 

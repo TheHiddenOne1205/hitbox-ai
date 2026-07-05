@@ -81,3 +81,38 @@ Last updated: 2026-07-05
 | **70-79%** (Stable) | Caution Yellow | `bg-pixel-yellow/10 text-pixel-yellow border border-pixel-yellow/30` |
 | **50-69%** (Improving) | Caution Orange | `bg-pixel-orange/10 text-pixel-orange border border-pixel-orange/30` |
 | **Below 50%** (Critical) | Critical Red | `bg-pixel-red/10 text-pixel-red border border-pixel-red/30` |
+
+---
+
+### Login Form Card
+Cozy Obsidian/Gold themed login card.
+
+File: [page.tsx](file:///home/kalash/projects/hitbox-ai/app/(auth)/login/page.tsx)
+Last updated: 2026-07-05
+
+| Property | Class |
+| --- | --- |
+| Card Container | `w-full max-w-md bg-panel border border-card-border rounded-xl p-8 shadow-[0px_4px_10px_rgba(0,0,0,0.4)] flex flex-col gap-8 relative overflow-hidden` |
+| Header Logo Frame | `w-16 h-16 rounded-xl bg-panel-secondary border border-card-border flex items-center justify-center text-accent-gold relative group hover:border-border-gold transition-all duration-300 shadow-inner` |
+| Title typography | `font-mono text-3xl font-bold tracking-wider text-text-light` |
+| Subtitle typography | `font-sans text-xs uppercase tracking-widest text-text-muted font-semibold` |
+| Info Banner | `bg-panel-secondary/40 border border-card-border/60 rounded-md p-4 flex gap-3 items-start` |
+| Error Alert Box | `bg-pixel-red/10 border border-pixel-red/40 rounded-md p-4 flex gap-3 items-start animate-in fade-in slide-in-from-top-2 duration-300` |
+| OAuth login button | `w-full flex items-center justify-center gap-3 py-3 px-4 bg-panel-secondary border border-card-border rounded-md text-text-light font-sans font-bold hover:border-border-gold transition-all duration-300 hover:translate-y-[-1px] active:translate-y-[1px] disabled:opacity-50 disabled:pointer-events-none group shadow-[0px_4px_10px_rgba(0,0,0,0.4)]` |
+
+---
+
+### Onboarding Form Card
+Cozy Obsidian/Gold themed onboarding handle selection card.
+
+File: [onboarding-form.tsx](file:///home/kalash/projects/hitbox-ai/app/onboarding/onboarding-form.tsx)
+Last updated: 2026-07-05
+
+| Property | Class |
+| --- | --- |
+| Card Container | `w-full max-w-md bg-panel border border-card-border rounded-xl p-8 shadow-[0px_4px_10px_rgba(0,0,0,0.4)] flex flex-col gap-8 relative overflow-hidden` |
+| Text Input | `w-full bg-panel-secondary border border-card-border rounded-md px-4 py-3 text-text-light placeholder:text-text-muted font-sans text-sm focus:outline-none focus:border-border-gold transition-colors shadow-inner` |
+| Primary submit button | `w-full flex items-center justify-center gap-3 py-3 px-4 bg-accent-orange border-2 border-card-border text-text-light font-sans font-bold rounded-xl shadow-[0_4px_0_px_var(--color-card-border)] hover:translate-y-[2px] hover:shadow-[0_2px_0_px_var(--color-card-border)] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-50 disabled:pointer-events-none group` |
+
+**Pattern notes:**
+Maintains identical container ratios, spacing gaps, and decorative corner borders as the Login Form Card. The submission button utilizes the primary accent-orange theme accent to call out final workspace initialization.

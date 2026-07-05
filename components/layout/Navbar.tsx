@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { ChevronDown, Gamepad, User, LogOut, ShieldAlert } from "lucide-react";
+import { ChevronDown, Gamepad, User, LogOut, Loader2 } from "lucide-react";
+import { insforge } from "@/lib/insforge-client";
+import { signOutAction } from "@/actions/auth";
+import posthog from "posthog-js";
 
 type Project = {
   id: string;
@@ -17,24 +20,73 @@ const MOCK_PROJECTS: Project[] = [
   { id: "3", title: "Crypt Crawler", genre: "Tactical Dungeon Crawler" },
 ];
 
-export function Navbar() {
+export type NavbarUser = {
+  id?: string;
+  email?: string | null;
+  profile?: {
+    username?: string | null;
+  } | null;
+};
+
+type NavbarProps = {
+  initialUser?: NavbarUser | null;
+};
+
+export function Navbar({ initialUser }: NavbarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [selectedProject, setSelectedProject] = useState<Project | null>(MOCK_PROJECTS[0]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(!!initialUser);
+  const [userEmail, setUserEmail] = useState<string | null>(initialUser?.profile?.username || initialUser?.email || null);
+  const [loading, setLoading] = useState(!initialUser);
 
-  // Synchronize state with a mock cookie/localStorage value so other components can react
+  const [prevUser, setPrevUser] = useState(initialUser);
+  if (initialUser !== prevUser) {
+    setPrevUser(initialUser);
+    setIsLoggedIn(!!initialUser);
+    setUserEmail(initialUser?.profile?.username || initialUser?.email || null);
+    setLoading(false);
+  }
+
+  // Synchronize state with real InsForge authentication
   useEffect(() => {
-    const sessionState = localStorage.getItem("hitbox_mock_session") === "true";
-    setIsLoggedIn(sessionState);
-  }, []);
+    if (!initialUser) {
+      const checkSession = async () => {
+        try {
+          const { data } = await insforge.auth.getCurrentUser();
+          setIsLoggedIn(!!data?.user);
+          const profile = data?.user?.profile as Record<string, unknown> | null;
+          const username = typeof profile?.username === "string" ? profile.username : null;
+          setUserEmail(username || data?.user?.email || null);
+        } catch (err) {
+          console.error("[Navbar] Error checking authentication state:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      checkSession();
+    }
+  }, [initialUser, pathname]);
 
-  const toggleAuth = () => {
-    const nextState = !isLoggedIn;
-    setIsLoggedIn(nextState);
-    localStorage.setItem("hitbox_mock_session", String(nextState));
-    // Trigger storage event for page component to pick up immediately
-    window.dispatchEvent(new Event("storage"));
+  const handleAuthAction = async () => {
+    if (isLoggedIn) {
+      posthog.capture("sign_out_clicked");
+      setLoading(true);
+      try {
+        const res = await signOutAction();
+        if (res.success) {
+          posthog.reset();
+          window.location.href = "/";
+        }
+      } catch (err) {
+        console.error("[Navbar] Sign out error:", err);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      router.push("/login");
+    }
   };
 
   const navLinks = [
@@ -83,6 +135,11 @@ export function Navbar() {
                   <button
                     key={project.id}
                     onClick={() => {
+                      posthog.capture("project_context_changed", {
+                        project_id: project.id,
+                        project_title: project.title,
+                        genre: project.genre,
+                      });
                       setSelectedProject(project);
                       setDropdownOpen(false);
                     }}
@@ -125,25 +182,28 @@ export function Navbar() {
           })}
         </ul>
 
-        {/* Mock Session State Controller */}
+        {/* Real Session State Controller */}
         <div className="flex items-center gap-3 pl-4 border-l border-border-light">
           <button
-            onClick={toggleAuth}
-            className={`flex items-center gap-2 px-3 py-1.5 font-mono text-xs border rounded-md transition-all shadow-[2px_2px_0px_rgba(0,0,0,0.3)] ${
+            onClick={handleAuthAction}
+            disabled={loading}
+            className={`flex items-center gap-2 px-3 py-1.5 font-mono text-xs border rounded-md transition-all shadow-[2px_2px_0px_rgba(0,0,0,0.3)] disabled:opacity-50 ${
               isLoggedIn
-                ? "bg-panel-active border-border-light text-text-green hover:bg-panel-secondary hover:text-text-light"
+                ? "bg-panel border-card-border text-text-muted hover:text-pixel-red hover:border-pixel-red"
                 : "bg-panel border-card-border text-accent-gold hover:border-border-gold hover:bg-panel-secondary"
             }`}
           >
-            {isLoggedIn ? (
+            {loading ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-accent-gold" />
+            ) : isLoggedIn ? (
               <>
-                <User className="w-3.5 h-3.5" />
-                <span>Dev Session</span>
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="max-w-[100px] truncate">{userEmail || "Sign Out"}</span>
               </>
             ) : (
               <>
-                <ShieldAlert className="w-3.5 h-3.5 text-accent-orange" />
-                <span>Guest Session</span>
+                <User className="w-3.5 h-3.5 text-accent-gold" />
+                <span>Sign In</span>
               </>
             )}
           </button>
