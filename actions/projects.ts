@@ -144,3 +144,44 @@ export async function saveProjectAction(
     return { success: false, error: "An unexpected server error occurred while saving" };
   }
 }
+
+export async function deleteProjectAction(
+  projectId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const insforge = await createInsforgeServer();
+    const { data: { user }, error: authError } = await insforge.auth.getCurrentUser();
+
+    if (authError || !user) {
+      return { success: false, error: "Unauthorized user session" };
+    }
+
+    // 1. Remove associated files from storage (S3 drafts bucket)
+    const filePath = `drafts/${user.id}/${projectId}/gdd.pdf`;
+    const { error: removeError } = await insforge.storage.from("drafts").remove(filePath);
+    if (removeError) {
+      console.warn("[deleteProjectAction] Warning removing draft file:", removeError);
+    }
+
+    // 2. Delete projects row (cascades database delete via FOREIGN KEY constraints)
+    const { error: dbError } = await insforge.database
+      .from("projects")
+      .delete()
+      .eq("id", projectId)
+      .eq("user_id", user.id);
+
+    if (dbError) {
+      console.error("[deleteProjectAction] DB Delete Error:", dbError);
+      return { success: false, error: dbError.message || "Failed to delete project from database" };
+    }
+
+    // 3. Revalidate dashboard/inventory paths
+    revalidatePath("/projects");
+    revalidatePath("/dashboard");
+
+    return { success: true };
+  } catch (error) {
+    console.error("[deleteProjectAction] Unexpected Delete Error:", error);
+    return { success: false, error: "An unexpected error occurred during project deletion" };
+  }
+}

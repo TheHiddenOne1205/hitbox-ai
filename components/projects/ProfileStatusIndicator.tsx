@@ -22,7 +22,7 @@ export function ProfileStatusIndicator({ isComplete }: Props) {
           Profile Incomplete
         </span>
         <p className="text-sm text-text-muted leading-relaxed">
-          Your game design profile is missing required fields. Complete the form below to unlock concept validation and PDF generation capabilities.
+          Your game design profile is missing required fields. Complete the form below to unlock concept validation capabilities.
         </p>
       </div>
       <button

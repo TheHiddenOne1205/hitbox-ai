@@ -6,9 +6,9 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ## Current Status
 
-* **Phase:** Phase 2 — Project Profile & GDD Management
-* **Last completed:** 06 Project Save Logic
-* **Next:** 07 AI Project Extraction from Draft Document
+* **Phase:** Phase 4 — Mechanic Details & Deep Research
+* **Last completed:** 12 Mechanic Details Page — Full UI
+* **Next:** 13 Competitor Research Agent
 
 ---
 
@@ -54,13 +54,13 @@ Update this file after every completed feature. Any AI agent reading this should
 
   * [x] ProfileStatusIndicator warning banner (dismissable, yellow severity)
 
-  * [x] GDDPreview card with generation status, trigger button, and download link
+  * [x] Quick Actions sidebar layout for project actions and delete button
 
   * [x] Sticky Save Configuration footer bar with loading and success states
 
   * [x] Responsive two-column layout (form + sticky sidebar) at `app/projects/[id]/page.tsx`
 
-* [x] **06 Project Save Logic**
+* [x] **06 Project Save & Deletion Logic**
 
   * [x] Server Action mutations inside `actions/projects.ts` mapped to profile tables with SQL `INSERT`/`UPDATE` upsert behavior
 
@@ -70,47 +70,42 @@ Update this file after every completed feature. Any AI agent reading this should
 
   * [x] Dynamic project context selection in the Navbar (reads real DB projects, routes users automatically on selection)
 
-* [ ] **07 AI Project Extraction from Draft Document**
+  * [x] Client and server-side deletion routines (`deleteProjectAction`) cleaning both relational data records and private storage folders.
 
-* [ ] Secure byte stream conversion passing layout characters out to processing systems
+* [x] **07 AI Project Extraction from Draft Document**
 
-* [ ] Gemini parsing routine that synthesizes unstructured files into strict JSON project schema mappings
+  * [x] Secure byte stream conversion passing layout characters out to processing systems
 
-* [ ] **08 GDD / Pitch Deck PDF Generation from Project**
+  * [x] Gemini parsing routine that synthesizes unstructured files into strict JSON project schema mappings
 
-* [ ] POST route at `/api/gdd/generate` extracting active project configurations
 
-* [ ] `@react-pdf/renderer` structure formatting that saves PDF byte buffers natively to cloud buckets
 
 ### Phase 3 — Validate Concepts Workspace
 
-* [ ] **09 Validate Concepts Page — Full UI**
+* [x] **09 Validate Concepts Page — Full UI**
 
-* [ ] Analysis workspace input modules for Mechanic Name and Benchmark Genre
+  * [x] Analysis workspace input modules for Mechanic Name and Benchmark Genre ([ConceptInputs.tsx](file:///home/kalash/projects/hitbox-ai/components/validate-concepts/ConceptInputs.tsx))
+  * [x] Comprehensive scannable data grid layout containing color-coded viability tags, engagement filters, search, and pagination ([validate-concepts-client.tsx](file:///home/kalash/projects/hitbox-ai/app/projects/%5Bid%5D/validate/validate-concepts-client.tsx))
 
-* [ ] Comprehensive scannable data grid layout containing color-coded viability rings and engagement filters
+* [x] **10 Objective SearXNG Concept Discovery**
 
-* [ ] **10 Objective SearXNG Concept Discovery**
+  * [x] API endpoint path at `/api/agent/validate` spinning up unique `agent_runs` keys
+  * [x] Aggregator logic fetching clean public Reddit/Steam review items from local/cloud SearXNG engines
+  * [x] Gemini screening sweeps using `gemini-3.1-flash-lite` that determine 0–100 alignment metrics without manufacturing text reviews
 
-* [ ] API endpoint path at `/api/agent/validate` spinning up unique `agent_runs` keys
+* [x] **11 Filter + Sort + Pagination Wiring**
 
-* [ ] Aggregator logic fetching clean public Reddit/Steam review items from cloud SearXNG engines
+  * [x] Multi-tenant database filtration parameters isolating target concept categories
 
-* [ ] Gemini screening sweeps that determine 0–100 alignment metrics without manufacturing text reviews
-
-* [ ] **11 Filter + Sort + Pagination Wiring**
-
-* [ ] Multi-tenant database filtration parameters isolating target concept categories
-
-* [ ] Dynamic query sorters matching viability ranks, case-insensitive text terms, and 20-row offsets
+  * [x] Dynamic query sorters matching viability ranks, case-insensitive text terms, and 20-row offsets
 
 ### Phase 4 — Mechanic Details & Deep Research
 
-* [ ] **12 Mechanic Details Page — Full UI**
+* [x] **12 Mechanic Details Page — Full UI**
 
-* [ ] High-fidelity detail view panels visualizing qualitative sentiment tags and pitfall warnings
+  * [x] High-fidelity detail view panels visualizing qualitative sentiment tags and pitfall warnings
 
-* [ ] Research control dashboard modules presenting explicit "Research Competitors" CTA options
+  * [x] Research control dashboard modules presenting explicit "Research Competitors" CTA options
 
 * [ ] **13 Competitor Research Agent**
 
@@ -153,6 +148,12 @@ Update this file after every completed feature. Any AI agent reading this should
 * **Full Reload Redirection for Auth Changes**: Configured both callback and sign-out pages to redirect using `window.location.href` rather than client-side `router.push`. This triggers a complete browser reload, clearing/reinitializing the client-side JavaScript memory context and forcing the browser SDK to read the new cookie states.
 * **Server-Side Session Prop Passing**: Converted homepage to a Server Component and fetched session states directly on the server to pass them down to the client-side `Navbar` and `Hero` as props, bypassing browser cross-domain cookie check limits.
 * **Onboarding Username Setup Screen**: Added a `/onboarding` step post-authentication where users configure their handle (stored in user profile metadata), shielding main dashboards from users who bypass onboarding.
+* **Object-Oriented PDF Parsing**: Used the class-based `PDFParse` API from Mehmet Kozan's modern `pdf-parse` (v2) library for parsing raw document bytes.
+* **Structured Output Model**: Configured Gemini `gemini-2.5-flash` with `responseMimeType: "application/json"` and temperature `0.3` to guarantee schema-compliant JSON extraction directly from draft blueprints.
+* **Cascaded Deletion Integration**: Created a `deleteProjectAction` Server Action handling both file storage removal (`insforge.storage.from("drafts").remove`) and database record deletion. Relied on PostgreSQL foreign key `ON DELETE CASCADE` constraints to automatically clean up all associated `agent_runs`, `mechanics`, and `agent_logs` records.
+* **Gemini 3.1 Flash Lite Model Selection**: Specified `gemini-3.1-flash-lite` for the SearXNG concept validation agent to leverage higher rate limits.
+* **SearXNG Query Strategy**: Formatted search query strings targeting Reddit and Steam Community with strict quotes and fallbacks to unquoted query queries when 0 results are returned.
+* **Soft Block Handling**: Integrated blocked state indicators gracefully returning a soft indicator `blocked: true` to avoid crashes when SearXNG is unreachable.
 
 ---
 

@@ -143,6 +143,7 @@ export interface SearXNGResult {
   structural_text: string;
   reference_url: string;
   community_score: number;
+  published_date?: string;
 }
 
 /** Standard InsForge DB response wrapper */

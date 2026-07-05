@@ -11,7 +11,7 @@
  | **Vercel** (Hobby Tier - $0, no card)
 
  |
-| **Auth + DB + Storage** | InsForge | Multi-project relational layer, auth engine, and PDF binary store
+| **Auth + DB + Storage** | InsForge | Multi-project relational layer, auth engine, and draft file storage
 
  | **InsForge Cloud** (Free Tier - $0, no card)
 
@@ -28,9 +28,6 @@
 | **Telemetry** | PostHog | Scoped user action event mapping & analytics dashboards
 
  | **PostHog Cloud** (Free Tier - $0, no card) |
-| **PDF Generation** | @react-pdf/renderer | High-fidelity Pitch Deck and Game Design Document rendering
-
- | Evaluated inside Next.js Serverless Functions |
 | **Language** | TypeScript strict | Application-wide type enforcement
 
  | Native compiler build pass |
@@ -123,7 +120,6 @@ NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
 │       │   ├── validate/route.ts          → Hits SearXNG to fetch live community footprints[cite: 1]
 │       │   └── research/route.ts          → Runs Stagehand cloud session via Browserbase
 │       ├── gdd/
-│       │   ├── generate/route.ts          → Generates PDF Pitch Decks from project records[cite: 1]
 │       │   └── extract/route.ts           → Extracts GDD fields from uploaded document text[cite: 1]
 ├── agent/
 │   ├── aggregator.ts                      → Cleans query fields & fetches data via SearXNG JSON[cite: 1]
@@ -264,19 +260,16 @@ Page data revalidated cleanly on screen[cite: 3]
 
 ```
 
-### Game Document Operations (API Routes)
+### Game Document Extraction Pipeline (API Routes)
 
 ```
-User uploads draft blueprint file or clicks "Generate PDF Outline"
+User uploads draft blueprint file
         ↓
-POST request hits route path /api/gdd/[action]
+POST request hits route path /api/gdd/extract
         ↓
-Gemini processes text mapping or @react-pdf/renderer constructs output buffer[cite: 1, 3]
+Gemini processes text mapping to schema properties
         ↓
-New PDF document uploads cleanly to InsForge Storage bucket instance[cite: 1, 3]
-        ↓
-Output bucket storage URL persists safely inside the active projects table row[cite: 3]
-
+Extracted JSON payload returned to form workspace
 ```
 
 ---

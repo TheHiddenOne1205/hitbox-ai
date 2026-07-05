@@ -313,7 +313,6 @@ Approved production dependencies for Hitbox AI:
 * `@google/genai` — Official Google Gemini API client powering `gemini-2.5-flash`.
 * `posthog-js` — Client component client event logging interface.
 * `posthog-node` — Server action and route handler event integration toolkit.
-* `@react-pdf/renderer` — Layout compilation engine producing Game Design Document blueprints.
 * `zod` — Schema definitions and rigid JSON validation passes.
 * `lucide-react` — Visual design icons.
 * `tailwindcss` — CSS utility configuration framework.

@@ -146,8 +146,6 @@ Build the complete project setup and management UI with mock data. No save logic
 
 
 
-* Generate Pitch Deck Outline / GDD PDF button below form
-
 
 * Save Project Configuration button at bottom
 
@@ -210,27 +208,6 @@ Extract from Draft button — Gemini reads uploaded document data and auto-fills
 
 
 ---
-
-### 08 GDD / Pitch Deck PDF Generation from Project
-
-Generate a clean, high-fidelity Game Design Document or Pitch Deck outline PDF from current project data using Gemini.
-
-**Logic:**
-
-* POST `/api/gdd/generate` called, pulling active `project_id` parameter
-
-
-* Load specific project record profiles from the `projects` table database tier
-
-
-* Gemini processes the structural fields to build out refined executive summaries and pitch paragraphs
-
-
-* `@react-pdf/renderer` takes the synthesized data objects and compiles a PDF byte buffer via `renderToBuffer()`
-
-* PDF buffer uploaded directly into InsForge Storage, updating the target project directory
-
-
 
 ---
 

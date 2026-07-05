@@ -3,6 +3,10 @@ import type { NextRequest } from "next/server";
 import { updateSession, CookieOptions } from "@insforge/sdk/ssr";
 
 export async function proxy(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith("/ingest")) {
+    return NextResponse.next();
+  }
+
   const response = NextResponse.next();
 
   // Create wrappers matching the CookieStore (get, set, delete) expected by updateSession
@@ -110,7 +114,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - ingest (PostHog reverse-proxy — must reach next.config rewrites directly)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|ingest).*)",
   ],
 };

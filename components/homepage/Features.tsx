@@ -24,12 +24,12 @@ export function Features() {
     },
     {
       icon: <FileText className="w-6 h-6 text-accent-gold" />,
-      title: "GDD & Pitch Deck Compilation",
-      description: "Upload a draft game design outline text file. Gemini extracts parameters to build your database design profile, and compiles a premium, downloadable GDD Pitch Deck PDF with one click.",
+      title: "AI GDD Draft Extraction",
+      description: "Upload a draft game design outline file. Gemini extracts parameters to auto-populate your database design profile in seconds.",
       bullets: [
         "Draft blueprint drag-and-drop uploads",
         "GDD Parameter auto-populating",
-        "@react-pdf/renderer S3 binary uploads"
+        "Supports PDF, TXT, and Markdown files"
       ]
     }
   ];

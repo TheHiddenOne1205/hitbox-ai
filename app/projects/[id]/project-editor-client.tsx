@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Save, Loader2, FlaskConical } from "lucide-react";
+import { Save, Loader2, FlaskConical, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 import { ProfileStatusIndicator } from "@/components/projects/ProfileStatusIndicator";
 import { DraftUpload } from "@/components/projects/DraftUpload";
 import { ProjectForm, type ProjectFormData } from "@/components/projects/ProjectForm";
-import { GDDPreview } from "@/components/projects/GDDPreview";
-import { saveProjectAction } from "@/actions/projects";
+import { saveProjectAction, deleteProjectAction } from "@/actions/projects";
 import { Project } from "@/types";
 
 type Props = {
@@ -56,7 +56,37 @@ export function ProjectEditorClient({ projectId, initialProject }: Props) {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [formVersion, setFormVersion] = useState(0);
+
+  const handleDelete = async () => {
+    if (
+      !window.confirm(
+        "Are you absolutely sure you want to delete this project? This will permanently remove all associated mechanics, validation reports, logs, and files. This action cannot be undone."
+      )
+    ) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await deleteProjectAction(projectId);
+      if (response.success) {
+        posthog.capture("project_deleted", { projectId });
+        router.push("/projects");
+        router.refresh();
+      } else {
+        setErrorMessage(response.error || "Failed to delete project");
+      }
+    } catch (err) {
+      console.error("[ProjectEditor] Delete error:", err);
+      setErrorMessage("An unexpected error occurred while deleting the project.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -103,18 +133,55 @@ export function ProjectEditorClient({ projectId, initialProject }: Props) {
     }
   };
 
-  // Simulate extract (will wire to /api/gdd/extract in Phase 07)
-  const handleExtract = async (_file: File) => {
+  // Call real AI GDD extraction endpoint
+  const handleExtract = async (fileOrUrl: File | string) => {
     setIsExtracting(true);
-    await new Promise((r) => setTimeout(r, 2000));
-    setIsExtracting(false);
-  };
+    setErrorMessage(null);
 
-  // Simulate PDF generation (will wire to /api/gdd/generate in Phase 08)
-  const handleGenerate = async () => {
-    setIsGenerating(true);
-    await new Promise((r) => setTimeout(r, 2500));
-    setIsGenerating(false);
+    try {
+      const data = new FormData();
+      if (typeof fileOrUrl === "string") {
+        data.append("url", fileOrUrl);
+      } else {
+        data.append("file", fileOrUrl);
+      }
+
+      const res = await fetch("/api/gdd/extract", {
+        method: "POST",
+        body: data,
+      });
+
+      const result = await res.json();
+      if (res.ok && result.success && result.data) {
+        const extracted = result.data;
+        setFormData({
+          title: extracted.title || "",
+          genre: extracted.genre || "",
+          artStyle: extracted.artStyle || "",
+          platform: Array.isArray(extracted.platform) ? extracted.platform : [],
+          targetAudience: extracted.targetAudience || "",
+          keywords: Array.isArray(extracted.keywords) ? extracted.keywords : [],
+          playerLoop: extracted.playerLoop || "",
+          coreMechanics: Array.isArray(extracted.coreMechanics) ? extracted.coreMechanics : [],
+          monetization: extracted.monetization || "",
+        });
+        setFormVersion((v) => v + 1);
+
+        // Capture PostHog telemetry event
+        posthog.capture("draft_extracted", {
+          projectId,
+          hasFile: typeof fileOrUrl !== "string",
+          hasUrl: typeof fileOrUrl === "string",
+        });
+      } else {
+        setErrorMessage(result.error || "Failed to extract game design settings from the draft document.");
+      }
+    } catch (err) {
+      console.error("[ProjectEditor] Extraction error:", err);
+      setErrorMessage("An unexpected error occurred during draft document extraction.");
+    } finally {
+      setIsExtracting(false);
+    }
   };
 
   const isComplete = initialProject?.is_complete ?? false;
@@ -127,6 +194,7 @@ export function ProjectEditorClient({ projectId, initialProject }: Props) {
 
       {/* Draft Upload */}
       <DraftUpload
+        initialFileUrl={initialProject?.pitch_deck_url || undefined}
         onExtract={handleExtract}
         onSkip={() => {}}
         onFileSelect={setSelectedFile}
@@ -138,19 +206,14 @@ export function ProjectEditorClient({ projectId, initialProject }: Props) {
         {/* Main GDD Form */}
         <div className="flex-1 min-w-0 flex flex-col gap-6">
           <ProjectForm
-            initialData={getInitialForm()}
+            key={`${projectId}-${formVersion}`}
+            initialData={formData}
             onChange={setFormData}
           />
         </div>
 
-        {/* Sidebar: GDD Preview Card */}
+        {/* Sidebar: Quick Actions Card */}
         <div className="w-full xl:w-[340px] shrink-0 flex flex-col gap-4 sticky top-[88px]">
-          <GDDPreview
-            projectTitle={currentTitle}
-            hasPitchDeckUrl={!!initialProject?.pitch_deck_url}
-            onGenerate={handleGenerate}
-            isGenerating={isGenerating}
-          />
 
           {/* Quick Actions Card */}
           <div className="bg-panel border border-card-border rounded-xl p-4 shadow-[0px_4px_10px_rgba(0,0,0,0.4)] flex flex-col gap-3">
@@ -164,6 +227,22 @@ export function ProjectEditorClient({ projectId, initialProject }: Props) {
               <FlaskConical className="w-4 h-4 text-accent-gold group-hover:scale-110 transition-transform" />
               Validate Concepts
             </Link>
+
+            {projectId !== "new" && projectId !== "1" && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="flex items-center gap-2.5 px-3 py-2.5 bg-panel-secondary border border-card-border rounded-md text-pixel-red font-sans text-sm hover:border-pixel-red/50 hover:bg-pixel-red/5 transition-all group disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                ) : (
+                  <Trash2 className="w-4 h-4 text-pixel-red group-hover:scale-110 transition-transform shrink-0" />
+                )}
+                {isDeleting ? "Deleting..." : "Delete Project"}
+              </button>
+            )}
           </div>
         </div>
       </div>

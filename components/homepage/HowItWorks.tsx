@@ -21,11 +21,6 @@ export function HowItWorks() {
       icon: <Terminal className="w-5 h-5 text-accent-gold" />,
       title: "Deep Scrape Hubs",
       desc: "Launch Stagehand over Browserbase Cloud proxies to pull specific competitor balance models."
-    },
-    {
-      icon: <Download className="w-5 h-5 text-text-light" />,
-      title: "Generate PDF GDD",
-      desc: "Generate and download a complete, stakeholder-ready GDD Pitch Deck PDF in one click."
     }
   ];
 
@@ -39,13 +34,13 @@ export function HowItWorks() {
             The Game Design Validation Cycle
           </h2>
           <p className="font-sans text-sm text-text-muted">
-            Establish your parameters, run agent scans, analyze findings, and compile documents.
+            Establish your parameters, run agent scans, analyze findings, and track alignment.
           </p>
         </div>
 
         {/* Timeline Steps Panel */}
         <div className="bg-panel border border-card-border rounded-xl p-6 md:p-10 shadow-[0px_4px_10px_rgba(0,0,0,0.4)]">
-          <div className="relative grid grid-cols-1 md:grid-cols-5 gap-8">
+          <div className="relative grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* Connector Line (Desktop Only) */}
             <div className="hidden md:block absolute top-9 left-6 right-6 h-[2px] bg-border-light border-dashed border-t-2 z-0" />
 

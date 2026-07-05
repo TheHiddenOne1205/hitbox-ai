@@ -4,7 +4,9 @@ import posthog from "posthog-js";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, Suspense } from "react";
 
-if (typeof window !== "undefined") {
+// PostHog is initialized once in instrumentation-client.ts (Next.js 15.3+ standard).
+// If that doesn't run, we initialize it here safely on the client side.
+if (typeof window !== "undefined" && !posthog.__loaded) {
   posthog.init(process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN!, {
     api_host: "/ingest",
     ui_host: "https://us.posthog.com",

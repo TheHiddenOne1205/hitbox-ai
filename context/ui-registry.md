@@ -217,19 +217,155 @@ Active state uses `panel-active` + gold border + glow — matches sidebar active
 
 ---
 
-### GDD Preview Card (Document Output)
-Card showing PDF generation status and trigger.
+### Concept Inputs Card
+Inputs capturing gameplay mechanic name and genre baseline constraint parameters.
 
-File: [GDDPreview.tsx](file:///home/kalash/projects/hitbox-ai/components/projects/GDDPreview.tsx)
+File: [ConceptInputs.tsx](file:///home/kalash/projects/hitbox-ai/components/validate-concepts/ConceptInputs.tsx)
 Last updated: 2026-07-05
 
 | Property | Class |
 | --- | --- |
-| Card container | `bg-panel border border-card-border rounded-xl p-6 shadow-[0px_4px_10px_rgba(0,0,0,0.4)] flex flex-col gap-5 hover:border-border-gold transition-all duration-300` |
-| Status — ready | `bg-pixel-green/10 border border-pixel-green/30 rounded-lg flex items-center gap-3 px-4 py-3` |
-| Status — pending | `bg-panel-secondary/40 border border-card-border/60 rounded-lg flex items-center gap-3 px-4 py-3` |
-| Generate button | `flex items-center justify-center gap-2.5 w-full px-5 py-3 bg-panel-secondary border border-card-border text-text-light font-sans font-bold rounded-xl hover:border-border-gold hover:bg-panel-active transition-all` |
+| Card Container | `bg-panel border border-card-border rounded-xl p-6 shadow-[0px_4px_10px_rgba(0,0,0,0.4)] hover:border-border-gold transition-all duration-300` |
+| Input Fields | `w-full bg-panel-secondary border border-card-border rounded-md px-4 py-2.5 text-text-light placeholder:text-text-muted font-sans text-sm focus:outline-none focus:border-border-gold transition-colors shadow-inner` |
+| Primary Action Button | `w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-accent-orange border-2 border-card-border text-text-light font-sans font-bold rounded-xl shadow-[0_4px_0_px_var(--color-card-border)] hover:translate-y-[2px] hover:shadow-[0_2px_0_px_var(--color-card-border)] active:translate-y-[4px] active:shadow-none transition-all` |
+
+---
+
+### Insight Filters Tools
+Filter tools bar matching tags, search input, and pagination controls.
+
+File: [InsightFilters.tsx](file:///home/kalash/projects/hitbox-ai/components/validate-concepts/InsightFilters.tsx)
+Last updated: 2026-07-05
+
+| Property | Class |
+| --- | --- |
+| Search Input | `w-full bg-panel-secondary border border-card-border rounded-md pl-10 pr-4 py-2 text-text-light placeholder:text-text-muted font-sans text-xs focus:outline-none focus:border-border-gold transition-colors shadow-inner` |
+| Sort Selector Select | `w-full sm:w-40 bg-panel-secondary border border-card-border rounded-md px-3 py-2 text-text-light font-sans text-xs focus:outline-none focus:border-border-gold transition-colors shadow-inner cursor-pointer` |
+| Active Filter Button | `bg-panel-active border-border-gold text-accent-gold shadow-[0_0_8px_rgba(215,161,92,0.2)] px-3 py-1.5 rounded-md border font-sans text-xs font-semibold` |
+| Inactive Filter Button | `bg-panel-secondary border-card-border text-text-muted hover:border-border-gold hover:text-text-light px-3 py-1.5 rounded-md border font-sans text-xs font-semibold` |
+
+---
+
+### Insights Data Grid Table
+Data grid table showing forum origins, concept titles, viability scores, and search metadata.
+
+File: [InsightsTable.tsx](file:///home/kalash/projects/hitbox-ai/components/validate-concepts/InsightsTable.tsx)
+Last updated: 2026-07-05
+
+| Property | Class |
+| --- | --- |
+| Table Headers | `pb-3 font-mono text-[11px] font-medium text-accent-gold uppercase tracking-wider` |
+| Table Rows (bg/hover) | `hover:bg-panel-secondary transition-colors duration-200 group bg-panel` |
+| Divider Line | `divide-y divide-border-light` |
+
+---
+
+### Mechanic Details Header (MechanicInfo)
+
+File: [MechanicInfo.tsx](file:///home/kalash/projects/hitbox-ai/components/mechanic-details/MechanicInfo.tsx)
+Last updated: 2026-07-05
+
+| Property         | Class           |
+| ---------------- | --------------- |
+| Background       | `bg-panel` |
+| Border           | `border border-card-border` |
+| Border radius    | `rounded-xl` |
+| Text — primary   | `text-text-light font-bold` |
+| Text — secondary | `text-text-muted` |
+| Spacing          | `p-6` |
+| Hover state      | `hover:border-border-gold transition-all duration-300` |
+| Shadow           | `shadow-[0px_4px_10px_rgba(0,0,0,0.4)]` |
+| Accent usage     | Brand badge colors (e.g. `#FF4500` for Reddit, `text-accent-gold` for Steam) |
 
 **Pattern notes:**
-Generate button uses `panel-secondary` not `accent-orange` because it is a secondary action — Save is the primary CTA. Status rows mirror login page alert box pattern using pixel-green for success.
+Contains a breadcrumb back link at the top and metadata metrics column layout aligned left or right with standard `border-light` division lines.
+
+---
+
+### Viability Score Gauge (ViabilityScore)
+
+File: [ViabilityScore.tsx](file:///home/kalash/projects/hitbox-ai/components/mechanic-details/ViabilityScore.tsx)
+Last updated: 2026-07-05
+
+| Property         | Class           |
+| ---------------- | --------------- |
+| Background       | `bg-panel`, inner ring `bg-panel-secondary` |
+| Border           | `border border-card-border` |
+| Border radius    | `rounded-xl`, inner circle `rounded-full` |
+| Text — primary   | `text-text-light` |
+| Text — secondary | `text-text-muted` |
+| Spacing          | `p-6` |
+| Hover state      | none |
+| Shadow           | `shadow-[0px_4px_10px_rgba(0,0,0,0.4)]`, inner `shadow-inner` |
+| Accent usage     | Circle stroke color maps dynamically (`text-pixel-green`, `text-pixel-yellow`, `text-pixel-orange`, `text-pixel-red`) |
+
+**Pattern notes:**
+Draws an SVG circle gauge representing the viability index percentage. Highlights score categories using matching badge backgrounds and border tags.
+
+---
+
+### Friction Sentiment Panels (SentimentAnalysis)
+
+File: [SentimentAnalysis.tsx](file:///home/kalash/projects/hitbox-ai/components/mechanic-details/SentimentAnalysis.tsx)
+Last updated: 2026-07-05
+
+| Property         | Class           |
+| ---------------- | --------------- |
+| Background       | `bg-panel` |
+| Border           | `border border-card-border` |
+| Border radius    | `rounded-xl` |
+| Text — primary   | `text-text-light` |
+| Text — secondary | `text-text-muted` |
+| Spacing          | Grid `gap-6`, inner cards `p-6` |
+| Hover state      | none |
+| Shadow           | `shadow-[0px_4px_10px_rgba(0,0,0,0.4)]` |
+| Accent usage     | `text-pixel-red` (gripes), `text-pixel-yellow` (desires), `text-accent-gold` (competitors), `text-pixel-green` (wins) |
+
+**Pattern notes:**
+A clean 2x2 grid representing quantitative developer inputs. Lists are itemized with custom bullets matching the card accent.
+
+---
+
+### Design Action Alerts (DesignActions)
+
+File: [DesignActions.tsx](file:///home/kalash/projects/hitbox-ai/components/mechanic-details/DesignActions.tsx)
+Last updated: 2026-07-05
+
+| Property         | Class           |
+| ---------------- | --------------- |
+| Background       | `bg-panel`, inner warning cards `bg-panel-secondary/40` |
+| Border           | `border border-card-border`, inner card `border-pixel-orange/20` |
+| Border radius    | `rounded-xl`, inner cards `rounded-lg` |
+| Text — primary   | `text-text-light` |
+| Text — secondary | `text-text-muted` |
+| Spacing          | `p-6` |
+| Hover state      | none |
+| Shadow           | `shadow-[0px_4px_10px_rgba(0,0,0,0.4)]` |
+| Accent usage     | `text-pixel-orange` for caution warnings |
+
+**Pattern notes:**
+Highlights severe structural pitfalls or design warnings to prevent gameplay breaks. Uses highlighted custom caution markers `[!WAR]`.
+
+---
+
+### Competitor Research Dashboard (CompetitorResearch)
+
+File: [CompetitorResearch.tsx](file:///home/kalash/projects/hitbox-ai/components/mechanic-details/CompetitorResearch.tsx)
+Last updated: 2026-07-05
+
+| Property         | Class           |
+| ---------------- | --------------- |
+| Background       | `bg-panel` |
+| Border           | `border border-card-border` |
+| Border radius    | `rounded-xl` |
+| Text — primary   | `text-text-light` |
+| Text — secondary | `text-text-muted` |
+| Spacing          | `p-6` |
+| Hover state      | CTA Button hover transforms |
+| Shadow           | `shadow-[0px_4px_10px_rgba(0,0,0,0.4)]` |
+| Accent usage     | CTA Button uses `bg-accent-orange` and drop shadow pixels |
+
+**Pattern notes:**
+Toggles empty state trigger layout or deep dossier metrics panels depending on the presence of data.
+
 

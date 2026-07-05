@@ -4,16 +4,33 @@ import { useState, useRef, useCallback } from "react";
 import { Upload, FileText, Loader2, Zap, SkipForward, X } from "lucide-react";
 
 type Props = {
-  onExtract?: (file: File) => void;
+  initialFileUrl?: string;
+  onExtract?: (file: File | string) => void;
   onSkip?: () => void;
   onFileSelect?: (file: File | null) => void;
+  onClearExisting?: () => void;
   isExtracting?: boolean;
 };
 
-export function DraftUpload({ onExtract, onSkip, onFileSelect, isExtracting = false }: Props) {
+export function DraftUpload({
+  initialFileUrl,
+  onExtract,
+  onSkip,
+  onFileSelect,
+  onClearExisting,
+  isExtracting = false,
+}: Props) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [hasCloudFile, setHasCloudFile] = useState(!!initialFileUrl);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Sync state if initialFileUrl changes
+  const [prevInitialFileUrl, setPrevInitialFileUrl] = useState(initialFileUrl);
+  if (initialFileUrl !== prevInitialFileUrl) {
+    setPrevInitialFileUrl(initialFileUrl);
+    setHasCloudFile(!!initialFileUrl);
+  }
 
   const handleDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
@@ -22,6 +39,7 @@ export function DraftUpload({ onExtract, onSkip, onFileSelect, isExtracting = fa
       const file = e.dataTransfer.files[0];
       if (file && (file.type === "application/pdf" || file.type === "text/plain" || file.type === "text/markdown")) {
         setSelectedFile(file);
+        setHasCloudFile(false);
         onFileSelect?.(file);
       }
     },
@@ -41,6 +59,7 @@ export function DraftUpload({ onExtract, onSkip, onFileSelect, isExtracting = fa
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
+      setHasCloudFile(false);
       onFileSelect?.(file);
     }
   };
@@ -48,12 +67,16 @@ export function DraftUpload({ onExtract, onSkip, onFileSelect, isExtracting = fa
   const handleExtract = () => {
     if (selectedFile && onExtract) {
       onExtract(selectedFile);
+    } else if (hasCloudFile && initialFileUrl && onExtract) {
+      onExtract(initialFileUrl);
     }
   };
 
   const clearFile = () => {
     setSelectedFile(null);
+    setHasCloudFile(false);
     onFileSelect?.(null);
+    onClearExisting?.();
     if (inputRef.current) inputRef.current.value = "";
   };
 
@@ -78,11 +101,11 @@ export function DraftUpload({ onExtract, onSkip, onFileSelect, isExtracting = fa
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        onClick={() => !selectedFile && inputRef.current?.click()}
+        onClick={() => !(selectedFile || hasCloudFile) && inputRef.current?.click()}
         className={`relative flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed px-6 py-10 transition-all duration-200 cursor-pointer select-none ${
           isDragging
             ? "border-border-gold bg-panel-active/60"
-            : selectedFile
+            : (selectedFile || hasCloudFile)
             ? "border-pixel-green/50 bg-pixel-green/5 cursor-default"
             : "border-card-border hover:border-border-gold bg-panel-secondary/40 hover:bg-panel-secondary/60"
         }`}
@@ -95,15 +118,19 @@ export function DraftUpload({ onExtract, onSkip, onFileSelect, isExtracting = fa
           onChange={handleFileSelect}
         />
 
-        {selectedFile ? (
+        {(selectedFile || hasCloudFile) ? (
           <>
             <div className="w-12 h-12 rounded-lg bg-pixel-green/10 border border-pixel-green/30 flex items-center justify-center">
               <FileText className="w-6 h-6 text-pixel-green" />
             </div>
             <div className="flex flex-col items-center gap-1 text-center">
-              <span className="font-sans text-sm font-semibold text-text-light">{selectedFile.name}</span>
+              <span className="font-sans text-sm font-semibold text-text-light">
+                {selectedFile ? selectedFile.name : (initialFileUrl?.split("/").pop() || "gdd.pdf")}
+              </span>
               <span className="font-mono text-xs text-text-muted">
-                {(selectedFile.size / 1024).toFixed(1)} KB · Ready to extract
+                {selectedFile
+                  ? `${(selectedFile.size / 1024).toFixed(1)} KB · Ready to extract`
+                  : "Saved in Cloud · Ready to extract"}
               </span>
             </div>
             <button
@@ -143,7 +170,7 @@ export function DraftUpload({ onExtract, onSkip, onFileSelect, isExtracting = fa
         <button
           type="button"
           onClick={handleExtract}
-          disabled={!selectedFile || isExtracting}
+          disabled={(!selectedFile && !hasCloudFile) || isExtracting}
           className="flex items-center gap-2 px-5 py-2.5 bg-accent-orange border-2 border-card-border text-text-light font-sans font-bold rounded-xl shadow-[0_4px_0_var(--color-card-border)] hover:translate-y-[2px] hover:shadow-[0_2px_0_var(--color-card-border)] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-40 disabled:pointer-events-none"
         >
           {isExtracting ? (

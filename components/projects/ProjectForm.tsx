@@ -389,7 +389,7 @@ export function ProjectForm({ initialData, onChange }: Props) {
         <SectionLabel
           tag="Section C"
           title="Core GDD Data Structure"
-          description="The structural design backbone used for AI alignment scoring and PDF generation."
+          description="The structural design backbone used for AI alignment scoring."
         />
 
         {/* Player Loop */}
