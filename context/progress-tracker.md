@@ -6,9 +6,9 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ## Current Status
 
-* **Phase:** Phase 1 — Foundation
-* **Last completed:** 04 Database Schema
-* **Next:** 05 Project Form Page — Full UI
+* **Phase:** Phase 2 — Project Profile & GDD Management
+* **Last completed:** 05 Project Form Page — Full UI
+* **Next:** 06 Project Save Logic
 
 ---
 
@@ -46,11 +46,19 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ### Phase 2 — Project Profile & GDD Management
 
-* [ ] **05 Project Form Page — Full UI**
+* [x] **05 Project Form Page — Full UI**
 
-* [ ] Dynamic form frames capturing Base Metadata, Context Keywords, and Core GDD structure text areas
+  * [x] Dynamic form frames capturing Base Metadata (title, genre, art style, platform toggles, audience), Context Keywords chip input, and Core GDD structure (player loop, mechanics tags, monetization)
 
-* [ ] File drag-and-drop file upload framework with built-in action states and loading indicators
+  * [x] File drag-and-drop upload zone with three visual states (idle / dragging / file-selected), file preview, clear action, Extract and Skip buttons
+
+  * [x] ProfileStatusIndicator warning banner (dismissable, yellow severity)
+
+  * [x] GDDPreview card with generation status, trigger button, and download link
+
+  * [x] Sticky Save Configuration footer bar with loading and success states
+
+  * [x] Responsive two-column layout (form + sticky sidebar) at `app/projects/[id]/page.tsx`
 
 * [ ] **06 Project Save Logic**
 
