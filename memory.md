@@ -1,32 +1,31 @@
-# Memory — Mechanic Details Page — Full UI (Step 12)
+# Memory — Dashboard Analytics Charts Integration (Step 17)
 
-Last updated: 2026-07-05T19:56:42+05:30
+Last updated: 2026-07-06T10:37:44+05:30
 
 ## What was built
 
-- **`components/mechanic-details/MechanicInfo.tsx`** — Renders header, breadcrumbs, platform origin badge, upvotes, and date metrics.
-- **`components/mechanic-details/ViabilityScore.tsx`** — Displays dynamic SVG circle progress tracker and matching category text mapping back to score ranges.
-- **`components/mechanic-details/SentimentAnalysis.tsx`** — 2x2 grid representing complaints, desires, cited competitors, and easy wins.
-- **`components/mechanic-details/DesignActions.tsx`** — Highlighted warning box listing design pitfalls to avoid.
-- **`components/mechanic-details/CompetitorResearch.tsx`** — Renders competitor research dossier panels, or displays the "Research Competitors" CTA empty state button.
-- **`app/projects/[id]/validate/[mechId]/page.tsx`** — Dynamic Server Component route fetching project and mechanic details from database tables and mapping UI elements.
+- **`components/dashboard/DashboardCharts.tsx`** — Wired line and bar charts using dynamic datasets passed as props. Replaced duplicate Recharts imports and implemented fallback empty state placeholders featuring Lucide icons.
+- **`app/dashboard/page.tsx`** — Integrated database queries to count cumulative insights (Insights Mapped Over Time), group concepts (Viability Score Distribution Brackets), and calculate weekly crawler sessions (Research Activity Loops).
+- **`context/progress-tracker.md`** — Updated build tracking logs to record the completion of Step 17.
 
 ## Decisions made
 
-- **Server-Side Data Rendering**: Kept dynamic details page as an async Server Component to enforce rigid multi-tenant database filtering using the verified user ID.
-- **SVG Indicator Ring**: Drawn custom visual rating progress ring using pure inline SVGs dynamically colored from score brackets to avoid external UI canvas libraries.
+- **Run-to-Insight Date Association** — Decided to map cumulative discovery trends using the `started_at` timestamp of the corresponding `agent_runs` record instead of the web publication date (`found_at`). This correctly charts the timeline of when insights were added to the user's workspace rather than historical web publication dates.
+- **Database Telemetry Queries** — Queried the database tables (`agent_runs` and `mechanics`) directly for analytics metrics instead of requesting event pipelines from the PostHog query APIs, avoiding setup and API key constraints.
 
 ## Problems solved
 
-- **Database Tenancy Filtering**: Resolved scoping details page lookups correctly by chaining user filtration constraints directly on database query wrappers.
+- **Duplicate Imports Breakage** — Resolved Recharts compilation failures caused by duplicate import statements in `DashboardCharts.tsx`.
+- **Flat Cumulative Trend Line** — Solved a bug where cumulative charts displayed a flat maximum line by replacing date-string mappings with explicit Date comparisons and filtering out null, invalid, or web-published timestamps that fell outside the 30-day window.
 
 ## Current state
 
-- Step 12 is fully completed. Production build is compiled and verified successfully.
+- Phase 5 — Step 17 (Analytics Charts Integration) is completed and verified.
+- The Next.js production build passes compilation.
 
 ## Next session starts with
 
-- **Phase 4 — Step 13: Competitor Research Agent** — Write the API route endpoint `/api/agent/research` to spin up Stagehand crawler automation scripts using remote Browserbase cloud sessions.
+- **Phase 5 — Step 18: Final Production Deliverables & Walkthrough review** — Review the complete functional pipeline from document extraction down to competitive crawlers, and prepare final verification deliverables.
 
 ## Open questions
 

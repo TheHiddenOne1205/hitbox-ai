@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { CompetitorResearchDossier } from "@/types";
 import { Search, Compass, AlertCircle, Info, HelpCircle, FileText, CheckCircle } from "lucide-react";
 
@@ -17,6 +18,7 @@ export function CompetitorResearch({
   researchData,
   onStartResearch,
 }: CompetitorResearchProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -35,6 +37,8 @@ export function CompetitorResearch({
         const result = await res.json();
         if (!result.success) {
           setErrorMsg(result.error || "Stagehand scraping run failed. Returning synthesized brief.");
+        } else {
+          router.refresh();
         }
       }
     } catch (err) {

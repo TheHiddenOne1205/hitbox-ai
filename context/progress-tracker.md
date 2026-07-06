@@ -6,9 +6,9 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ## Current Status
 
-* **Phase:** Phase 4 — Mechanic Details & Deep Research
-* **Last completed:** 12 Mechanic Details Page — Full UI
-* **Next:** 13 Competitor Research Agent
+* **Phase:** Phase 5 — Dashboard Analytics
+* **Last completed:** 17 Analytics Charts Integration via PostHog Telemetry
+* **Next:** Final production deliverables / Next feature
 
 ---
 
@@ -107,33 +107,32 @@ Update this file after every completed feature. Any AI agent reading this should
 
   * [x] Research control dashboard modules presenting explicit "Research Competitors" CTA options
 
-* [ ] **13 Competitor Research Agent**
+* [x] **13 Competitor Research Agent**
 
-* [ ] API endpoint at `/api/agent/research` instantiating secure Stagehand automation loops
+  * [x] API endpoint at `/api/agent/research` instantiating secure Stagehand automation loops
 
-* [ ] Browserbase Cloud proxy execution sequences gathering features from competitor platforms
+  * [x] Browserbase Cloud proxy execution sequences gathering features from competitor platforms
 
-* [ ] Gemini synthesis routine storing completed competitor dossiers inside `mechanics.competitor_research`
+  * [x] Gemini synthesis routine storing completed competitor dossiers inside `mechanics.competitor_research` using `gemini-3.1-flash-lite`
 
 ### Phase 5 — Dashboard Analytics
 
-* [ ] **14 Dashboard Page — Full UI**
+* [x] **14 Dashboard Page — Full UI**
 
-* [ ] Workspace analytics frame rendering incomplete warnings, stat blocks, and transaction cards
+* [x] Workspace analytics frame rendering incomplete warnings, stat blocks, and transaction cards
 
-* [ ] Recharts visualization panels sketching mock telemetry trends and score ranges
+* [x] Recharts visualization panels sketching mock telemetry trends and score ranges
 
-* [ ] **15 Stats Bar Integration**
+* [x] **15 Stats Bar Integration**
 
-* [ ] Real data trackers executing user-scoped query counts for active insights and search counters
+  * [x] Real data trackers executing user-scoped query counts for active insights and search counters
 
-* [ ] **16 Recent Activity Data Loop**
+* [x] **16 Recent Activity Data Loop**
 
-* [ ] Combined activity streams sorting records descending by date arrays into informational HUD logs
+  * [x] Combined activity streams sorting records descending by date arrays into informational HUD logs
 
-* [ ] **17 Analytics Charts Integration via PostHog Telemetry**
-
-* [ ] Live PostHog event properties feeding volume lines, score ranges, and weekly scraping counters
+* [x] **17 Analytics Charts Integration via PostHog Telemetry**
+* [x] Live PostHog event properties feeding volume lines, score ranges, and weekly scraping counters (backed by direct InsForge DB analytics)
 
 ---
 
@@ -154,6 +153,9 @@ Update this file after every completed feature. Any AI agent reading this should
 * **Gemini 3.1 Flash Lite Model Selection**: Specified `gemini-3.1-flash-lite` for the SearXNG concept validation agent to leverage higher rate limits.
 * **SearXNG Query Strategy**: Formatted search query strings targeting Reddit and Steam Community with strict quotes and fallbacks to unquoted query queries when 0 results are returned.
 * **Soft Block Handling**: Integrated blocked state indicators gracefully returning a soft indicator `blocked: true` to avoid crashes when SearXNG is unreachable.
+* **Competitor Title Resolution via SearXNG**: Added a resolution helper that searches SearXNG for competitor names to extract Steam store pages before launching Stagehand.
+* **Stagehand Cloud Scraper Lifecycle**: Built the scraper using Stagehand V3.6.0 with Browserbase cloud sessions, restricted sub-page crawling depth (max 1 sub-page) to conserve resources, and guaranteed session closure via try/catch/finally blocks.
+* **Gemini 3.1 Flash Lite Synthesis**: Configured the research synthesis pass to use `gemini-3.1-flash-lite` to compile raw web extractions and project constraints into the final competitive dossier.
 
 ---
 

@@ -368,4 +368,62 @@ Last updated: 2026-07-05
 **Pattern notes:**
 Toggles empty state trigger layout or deep dossier metrics panels depending on the presence of data.
 
+---
+
+### DashboardStats (Stat Bar Tiles)
+
+File: [DashboardStats.tsx](file:///home/kalash/projects/hitbox-ai/components/dashboard/DashboardStats.tsx)
+Last updated: 2026-07-06
+
+| Property         | Class |
+| ---------------- | ----- |
+| Background       | `bg-panel` |
+| Border           | `border border-card-border` |
+| Border radius    | `rounded-xl` (12px) |
+| Text — primary   | `text-text-light font-mono text-3xl font-semibold` |
+| Text — secondary | `text-text-muted text-xs` |
+| Spacing          | `p-6` (24px) |
+| Hover state      | `hover:border-border-gold transition-all duration-300` |
+| Shadow           | `shadow-[0px_4px_10px_rgba(0,0,0,0.4)]` |
+| Accent usage     | `text-accent-gold` (for monospace labels) |
+
+---
+
+### DashboardCharts (Telemetry Graphics)
+
+File: [DashboardCharts.tsx](file:///home/kalash/projects/hitbox-ai/components/dashboard/DashboardCharts.tsx)
+Last updated: 2026-07-06
+
+| Property         | Class |
+| ---------------- | ----- |
+| Background       | `bg-panel` |
+| Border           | `border border-card-border` |
+| Border radius    | `rounded-xl` (12px) |
+| Text — primary   | `text-text-light` |
+| Text — secondary | `text-text-muted` |
+| Spacing          | `p-6` (24px) |
+| Hover state      | none |
+| Shadow           | `shadow-[0px_4px_10px_rgba(0,0,0,0.4)]` |
+| Accent usage     | Chart fills and lines pull standard variables: `--color-border-light`, `var(--color-accent-gold)`, `var(--color-accent-orange)` |
+
+---
+
+### DashboardActivity (Recent Logs Activity Feed)
+
+File: [DashboardActivity.tsx](file:///home/kalash/projects/hitbox-ai/components/dashboard/DashboardActivity.tsx)
+Last updated: 2026-07-06
+
+| Property         | Class |
+| ---------------- | ----- |
+| Background       | `bg-panel` |
+| Border           | `border border-card-border` |
+| Border radius    | `rounded-xl` (12px) |
+| Text — primary   | `text-text-light` |
+| Text — secondary | `text-text-muted` |
+| Spacing          | `p-6` (24px) |
+| Hover state      | row hover is `hover:bg-panel-secondary/20 transition-all` |
+| Shadow           | `shadow-[0px_4px_10px_rgba(0,0,0,0.4)]` |
+| Accent usage     | Icons inside row indicators use color accents: `text-accent-gold`, `text-accent-orange`, `text-text-green` |
+
+
 
