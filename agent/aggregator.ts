@@ -14,7 +14,7 @@ export async function discoverRealCommunityThreads(
   mechanicName: string,
   targetGenre: string
 ): Promise<AggregatorResponse> {
-  const baseUrl = process.env.SEARXNG_BASE_URL || "http://localhost:8888";
+  const baseUrl = process.env.NEXT_PUBLIC_SEARXNG_BASE_URL || process.env.SEARXNG_BASE_URL || "http://localhost:8888";
   
   // Format primary query: quoted terms for strict matching
   const primaryQuery = `site:reddit.com OR site:steamcommunity.com "${mechanicName}" "${targetGenre}"`;

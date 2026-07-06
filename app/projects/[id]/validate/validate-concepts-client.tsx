@@ -102,6 +102,60 @@ export function ValidateConceptsClient({ project, initialInsights = [] }: Valida
     setScanMilestone(null);
 
     try {
+      // 1. Attempt client-side search to leverage residential IP
+      let clientResults: any[] | null = null;
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_SEARXNG_BASE_URL || "https://searx.be";
+        const primaryQuery = `site:reddit.com OR site:steamcommunity.com "${mechanicName}" "${genreBaseline}"`;
+        const fallbackQuery = `site:reddit.com OR site:steamcommunity.com ${mechanicName} ${genreBaseline}`;
+        
+        const runQuery = async (q: string) => {
+          const url = `${baseUrl}/search?q=${encodeURIComponent(q)}&format=json&categories=general`;
+          const response = await fetch(url, {
+            headers: {
+              "Accept": "application/json",
+            }
+          });
+          if (!response.ok) throw new Error(`Status ${response.status}`);
+          const data = await response.json();
+          const rawResults = data.results || [];
+          const mapped = [];
+          for (const res of rawResults) {
+            const urlStr = res.url || "";
+            let origin = null;
+            if (urlStr.includes("reddit.com")) {
+              origin = "Reddit";
+            } else if (urlStr.includes("steamcommunity.com")) {
+              origin = "Steam Community";
+            }
+            if (origin) {
+              const baseScore = res.score ? Math.round(res.score * 10) : 1;
+              const randomDaysAgo = Math.floor(Math.random() * 180);
+              const fallbackDate = new Date();
+              fallbackDate.setDate(fallbackDate.getDate() - randomDaysAgo);
+              mapped.push({
+                title: res.title || "Untitled Discussion",
+                forum_hub_origin: origin,
+                structural_text: res.content || "",
+                reference_url: urlStr,
+                community_score: Math.max(1, baseScore),
+                published_date: res.publishedDate || fallbackDate.toISOString()
+              });
+            }
+          }
+          return mapped;
+        };
+
+        console.log(`[ClientSearch] Querying SearXNG client-side at ${baseUrl}`);
+        clientResults = await runQuery(primaryQuery);
+        if (clientResults.length === 0) {
+          clientResults = await runQuery(fallbackQuery);
+        }
+      } catch (searchErr) {
+        console.warn("[ClientSearch] Client-side search failed, falling back to server:", searchErr);
+      }
+
+      // 2. Dispatch validation to backend
       const response = await fetch("/api/agent/validate", {
         method: "POST",
         headers: {
@@ -110,7 +164,8 @@ export function ValidateConceptsClient({ project, initialInsights = [] }: Valida
         body: JSON.stringify({
           mechanic: mechanicName,
           genre: genreBaseline,
-          projectId: project.id
+          projectId: project.id,
+          results: clientResults // Pass client-fetched results if successful
         })
       });
 

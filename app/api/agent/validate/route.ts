@@ -94,9 +94,18 @@ export async function POST(request: Request) {
       created_at: new Date().toISOString()
     }]);
 
-    // 5. Query SearXNG for organic discussions
-    console.log(`[API/Validate] Fetching threads for: ${mechanic} / ${genre}`);
-    const searchData = await discoverRealCommunityThreads(mechanic, genre);
+    // 5. Query SearXNG for organic discussions (or use client pre-fetched results)
+    let searchData;
+    if (body.results && Array.isArray(body.results)) {
+      console.log(`[API/Validate] Using ${body.results.length} client pre-fetched search results`);
+      searchData = {
+        results: body.results,
+        blocked: false
+      };
+    } else {
+      console.log(`[API/Validate] Fetching threads for: ${mechanic} / ${genre} (server fallback)`);
+      searchData = await discoverRealCommunityThreads(mechanic, genre);
+    }
 
     // 6. Handle blocks or failure states from aggregator
     if (searchData.blocked) {

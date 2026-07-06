@@ -8,7 +8,7 @@ import { CompetitorResearchDossier, Project } from "@/types";
  * Searches SearXNG to resolve a competitor's game title to a Store/App URL (Steam prioritized).
  */
 async function resolveCompetitorUrl(competitorName: string): Promise<string | null> {
-  const baseUrl = process.env.SEARXNG_BASE_URL || "http://localhost:8888";
+  const baseUrl = process.env.NEXT_PUBLIC_SEARXNG_BASE_URL || process.env.SEARXNG_BASE_URL || "http://localhost:8888";
   const primaryQuery = `site:store.steampowered.com/app "${competitorName}"`;
   
   console.log(`[Research Agent] Resolving competitor URL for "${competitorName}" with query: ${primaryQuery}`);
