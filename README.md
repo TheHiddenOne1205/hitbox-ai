@@ -48,16 +48,3 @@ sequenceDiagram
 * **Align with Players:** Uncover unmet player desires in your genre.
 * **Validate the Market:** Build pitch decks backed by community telemetry, not guesswork.
 
----
-
-## 🎮 Get Started Now
-
-Ready to validate your next masterpiece?
-* Run the app locally in development mode: `npm run dev`
-* Build the app for production: `npm run build`
-* Deploy to the web for free on **Vercel** with **Hugging Face** hosting.
-
----
-<p align="center">
-  Made for Game Designers, by Indie Devs. 🚀
-</p>
