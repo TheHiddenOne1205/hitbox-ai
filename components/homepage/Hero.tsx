@@ -6,10 +6,14 @@ import posthog from "posthog-js";
 
 type HeroProps = {
   isLoggedIn: boolean;
+  activeProjectId: string | null;
 };
 
-export function Hero({ isLoggedIn }: HeroProps) {
+export function Hero({ isLoggedIn, activeProjectId }: HeroProps) {
   const targetRoute = isLoggedIn ? "/dashboard" : "/login";
+  const validateRoute = isLoggedIn 
+    ? (activeProjectId ? `/projects/${activeProjectId}/validate` : "/dashboard") 
+    : "/login";
 
   return (
     <section className="relative w-full py-16 px-6 overflow-hidden flex flex-col items-center">
@@ -37,7 +41,7 @@ export function Hero({ isLoggedIn }: HeroProps) {
         {/* Buttons (Retro Styled) */}
         <div className="flex flex-col sm:flex-row gap-4 mt-4 w-full sm:w-auto">
           <Link
-            href={isLoggedIn ? "/projects/1/validate" : "/login"}
+            href={validateRoute}
             onClick={() => posthog.capture("hero_cta_clicked", { cta: "validate_concept", is_logged_in: isLoggedIn })}
             className="group relative px-6 py-3.5 bg-accent-orange border-2 border-card-border text-text-light font-sans font-bold rounded-xl shadow-[0_4px_0_px_var(--color-card-border)] hover:translate-y-[2px] hover:shadow-[0_2px_0_px_var(--color-card-border)] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-2"
           >

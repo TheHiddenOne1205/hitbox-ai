@@ -18,12 +18,30 @@ export default async function Home() {
   }
 
   const isLoggedIn = !!user;
+  let activeProjectId = null;
+
+  if (user) {
+    try {
+      const insforge = await createInsforgeServer();
+      const { data: projects } = await insforge.database
+        .from("projects")
+        .select("id")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false })
+        .limit(1);
+      if (projects && projects.length > 0) {
+        activeProjectId = projects[0].id;
+      }
+    } catch (err) {
+      console.error("[Home] Error fetching active project:", err);
+    }
+  }
 
   return (
     <>
       <Navbar initialUser={user as unknown as NavbarUser} />
       <main className="flex-1 flex flex-col bg-background animate-in fade-in duration-300">
-        <Hero isLoggedIn={isLoggedIn} />
+        <Hero isLoggedIn={isLoggedIn} activeProjectId={activeProjectId} />
         <Features />
         <HowItWorks />
       </main>
