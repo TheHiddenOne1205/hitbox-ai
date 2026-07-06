@@ -1,27 +1,5 @@
 # 🎯 Hitbox AI
 ### *Stop Guessing. Validate Your Game Design Before You Code.*
-
-<p align="center">
-  <svg width="600" height="200" viewBox="0 0 600 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="600" height="200" rx="16" fill="#0A0A0C" />
-    <rect x="1" y="1" width="598" height="198" rx="15" stroke="#1F1F24" stroke-width="2" />
-    
-    <!-- Title -->
-    <text x="50%" y="75" text-anchor="middle" fill="#FFFFFF" font-family="system-ui, sans-serif" font-weight="800" font-size="40" letter-spacing="2">HITBOX AI</text>
-    <text x="50%" y="110" text-anchor="middle" fill="#8E9196" font-family="system-ui, sans-serif" font-size="14" font-weight="400">The Ultimate Game Design Validation & Sentiment Dossier Engine</text>
-    
-    <!-- Badges -->
-    <rect x="90" y="140" width="115" height="26" rx="13" fill="#EF4444" fill-opacity="0.1" stroke="#EF4444" stroke-width="1" />
-    <text x="147.5" y="157" text-anchor="middle" fill="#EF4444" font-family="system-ui, sans-serif" font-weight="600" font-size="11">Target Audience</text>
-
-    <rect x="220" y="140" width="160" height="26" rx="13" fill="#3B82F6" fill-opacity="0.1" stroke="#3B82F6" stroke-width="1" />
-    <text x="300" y="157" text-anchor="middle" fill="#3B82F6" font-family="system-ui, sans-serif" font-weight="600" font-size="11">Reddit & Steam Crawler</text>
-
-    <rect x="395" y="140" width="115" height="26" rx="13" fill="#10B981" fill-opacity="0.1" stroke="#10B981" stroke-width="1" />
-    <text x="452.5" y="157" text-anchor="middle" fill="#10B981" font-family="system-ui, sans-serif" font-weight="600" font-size="11">Gemini AI Intel</text>
-  </svg>
-</p>
-
 ---
 
 ## 💡 The Hard Truth About Game Development
