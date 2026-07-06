@@ -8,10 +8,48 @@ import { CompetitorResearchDossier, Project } from "@/types";
  * Searches SearXNG to resolve a competitor's game title to a Store/App URL (Steam prioritized).
  */
 async function resolveCompetitorUrl(competitorName: string): Promise<string | null> {
-  const baseUrl = process.env.NEXT_PUBLIC_SEARXNG_BASE_URL || process.env.SEARXNG_BASE_URL || "http://localhost:8888";
+  const serperApiKey = process.env.SERPER_API_KEY;
   const primaryQuery = `site:store.steampowered.com/app "${competitorName}"`;
+  const fallbackQuery = `"${competitorName}" video game`;
+
+  if (serperApiKey) {
+    console.log(`[Research Agent] Resolving competitor URL for "${competitorName}" via Serper.dev`);
+    const runSerperSearch = async (q: string) => {
+      try {
+        const response = await fetch("https://google.serper.dev/search", {
+          method: "POST",
+          headers: {
+            "X-API-KEY": serperApiKey,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ q })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.organic && data.organic.length > 0) {
+            return data.organic[0].link || null;
+          }
+        }
+      } catch (err) {
+        console.error(`[Research Agent] Serper.dev fetch failed for query "${q}":`, err);
+      }
+      return null;
+    };
+
+    let resolved = await runSerperSearch(primaryQuery);
+    if (!resolved) {
+      resolved = await runSerperSearch(fallbackQuery);
+    }
+    if (resolved) {
+      console.log(`[Research Agent] Resolved competitor URL: ${resolved}`);
+      return resolved;
+    }
+  }
+
+  // Fallback: SearXNG
+  const baseUrl = process.env.NEXT_PUBLIC_SEARXNG_BASE_URL || process.env.SEARXNG_BASE_URL || "http://localhost:8888";
   
-  console.log(`[Research Agent] Resolving competitor URL for "${competitorName}" with query: ${primaryQuery}`);
+  console.log(`[Research Agent] Resolving competitor URL for "${competitorName}" with query: ${primaryQuery} (SearXNG fallback)`);
   
   try {
     const url = `${baseUrl}/search?q=${encodeURIComponent(primaryQuery)}&format=json&categories=general`;
@@ -28,9 +66,7 @@ async function resolveCompetitorUrl(competitorName: string): Promise<string | nu
     console.error(`[Research Agent] Primary URL resolution failed for "${competitorName}":`, err);
   }
 
-  // Fallback broader search
-  const fallbackQuery = `"${competitorName}" video game`;
-  console.log(`[Research Agent] Trying fallback URL resolution for "${competitorName}" with query: ${fallbackQuery}`);
+  console.log(`[Research Agent] Trying fallback URL resolution for "${competitorName}" with query: ${fallbackQuery} (SearXNG fallback)`);
   try {
     const url = `${baseUrl}/search?q=${encodeURIComponent(fallbackQuery)}&format=json&categories=general`;
     const res = await fetch(url, { headers: { "Accept": "application/json" } });
