@@ -6,6 +6,9 @@ import { handleOAuthCallback } from "@/actions/auth";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import posthog from "posthog-js";
 
+// Track processed codes to prevent double-execution in React Strict Mode / remounts
+const processedCodes = new Set<string>();
+
 function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -17,6 +20,11 @@ function CallbackContent() {
       router.push("/login");
       return;
     }
+
+    if (processedCodes.has(code)) {
+      return;
+    }
+    processedCodes.add(code);
 
     const exchangeCode = async () => {
       const result = await handleOAuthCallback(code);
