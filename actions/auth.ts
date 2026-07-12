@@ -1,16 +1,19 @@
 "use server";
 
 import { createInsforgeAuth, createInsforgeServer } from "@/lib/insforge-server";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getPostHogClient, shutdownPostHog } from "@/lib/posthog-server";
 
 export async function signInWithProvider(provider: "google" | "github") {
   const auth = await createInsforgeAuth();
   const cookieStore = await cookies();
+  const headersList = await headers();
 
-  // Determine site URL for redirect callback
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  // Dynamically determine request origin to keep domain consistent (prevent cookie loss across custom & vercel domains)
+  const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost:3000";
+  const proto = headersList.get("x-forwarded-proto") || (host.includes("localhost") ? "http" : "https");
+  const origin = `${proto}://${host}`;
   const redirectTo = `${origin}/callback`;
 
   const { data, error } = await auth.signInWithOAuth(provider, {
